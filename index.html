@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nuestro Primer Año 🎈</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ====== PANTALLA DE INTRO ====== -->
+  <div id="intro-screen">
+    <div id="sky">
+      <div class="cloud cloud-1"></div>
+      <div class="cloud cloud-2"></div>
+      <div class="cloud cloud-3"></div>
+      <div class="cloud cloud-4"></div>
+      <div class="balloon b1"></div>
+      <div class="balloon b2"></div>
+      <div class="balloon b3"></div>
+      <div class="balloon b4"></div>
+      <div class="balloon b5"></div>
+    </div>
+
+    <div id="house-container">
+      <img id="house-img" src="img/casa.png" alt="Nuestra casita" />
+      <div id="house-fallback" style="display:none;">
+        <svg viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg" width="300">
+          <circle cx="100" cy="40" r="18" fill="#FF6B6B" opacity="0.9"/>
+          <circle cx="130" cy="25" r="15" fill="#FFD93D" opacity="0.9"/>
+          <circle cx="160" cy="35" r="20" fill="#6BCB77" opacity="0.9"/>
+          <circle cx="190" cy="20" r="16" fill="#4D96FF" opacity="0.9"/>
+          <circle cx="218" cy="42" r="14" fill="#FF6B6B" opacity="0.8"/>
+          <circle cx="80" cy="55" r="12" fill="#C77DFF" opacity="0.8"/>
+          <line x1="100" y1="58" x2="140" y2="120" stroke="#888" stroke-width="1"/>
+          <line x1="130" y1="40" x2="145" y2="120" stroke="#888" stroke-width="1"/>
+          <line x1="160" y1="55" x2="150" y2="120" stroke="#888" stroke-width="1"/>
+          <line x1="190" y1="36" x2="160" y2="120" stroke="#888" stroke-width="1"/>
+          <line x1="218" y1="56" x2="165" y2="120" stroke="#888" stroke-width="1"/>
+          <line x1="80" y1="67" x2="135" y2="120" stroke="#888" stroke-width="1"/>
+          <polygon points="50,140 150,80 250,140" fill="#5B8DD9"/>
+          <polygon points="60,140 150,88 240,140" fill="#6B9FE4"/>
+          <rect x="190" y="95" width="20" height="40" fill="#C0392B"/>
+          <rect x="186" y="91" width="28" height="8" fill="#E74C3C"/>
+          <rect x="60" y="138" width="180" height="140" fill="#F4C97A"/>
+          <rect x="62" y="140" width="176" height="136" fill="#F9D89C"/>
+          <rect x="80" y="165" width="45" height="40" rx="4" fill="#AED9E0"/>
+          <rect x="82" y="167" width="41" height="36" rx="3" fill="#C8EAF0"/>
+          <line x1="102" y1="167" x2="102" y2="203" stroke="#7BBCC8" stroke-width="2"/>
+          <line x1="82" y1="185" x2="123" y2="185" stroke="#7BBCC8" stroke-width="2"/>
+          <rect x="175" y="165" width="45" height="40" rx="4" fill="#AED9E0"/>
+          <rect x="177" y="167" width="41" height="36" rx="3" fill="#C8EAF0"/>
+          <line x1="197" y1="167" x2="197" y2="203" stroke="#7BBCC8" stroke-width="2"/>
+          <line x1="177" y1="185" x2="218" y2="185" stroke="#7BBCC8" stroke-width="2"/>
+          <rect x="118" y="210" width="50" height="68" rx="6" fill="#C0392B"/>
+          <rect x="120" y="212" width="46" height="64" rx="5" fill="#E74C3C"/>
+          <circle cx="158" cy="246" r="4" fill="#F4D03F"/>
+          <rect x="50" y="276" width="210" height="6" rx="3" fill="#7DBE74"/>
+          <rect x="40" y="280" width="230" height="12" rx="4" fill="#5CA854"/>
+        </svg>
+      </div>
+    </div>
+
+    <div id="intro-text">
+      <p class="subtitle">Un año de nuestra historia</p>
+    </div>
+  </div>
+
+  <!-- ====== PANTALLA DE CONTRASEÑA ====== -->
+  <div id="password-screen" class="hidden">
+    <div class="password-card">
+      <div class="password-icon">🔐</div>
+      <h2>Antes de entrar...</h2>
+      <p>¿Qué día especial marcó el inicio de nuestra historia?</p>
+      <div class="input-wrapper">
+        <input type="text" id="password-input" placeholder="Escribe tu respuesta..." autocomplete="off" />
+      </div>
+      <button id="password-btn" onclick="checkPassword()">Entrar ✨</button>
+      <p id="password-error" class="error-msg hidden">¡Vaya... piénsalo bien! 💭</p>
+      <p id="password-hint" class="hint-msg hidden">Pista: fue un día muy especial en Cataluña 🌹</p>
+      <span id="hint-toggle" onclick="toggleHint()">¿Necesitas una pista?</span>
+    </div>
+  </div>
+
+  <!-- ====== PANTALLA PRINCIPAL ====== -->
+  <div id="main-screen" class="hidden">
+    <div id="main-sky">
+      <div class="cloud cloud-1"></div>
+      <div class="cloud cloud-2"></div>
+      <div class="cloud cloud-3"></div>
+    </div>
+    <h1 id="main-title">Nuestro Primer Año 🎈</h1>
+    <p id="main-subtitle">Elige un mes para revivir nuestros recuerdos</p>
+    <div id="months-grid"></div>
+    <p id="unlock-hint" style="opacity:0; font-size:0.6rem; color:#fff; margin-top:2rem;">✨ Todos los meses desbloqueados ✨</p>
+  </div>
+
+  <!-- ====== PANTALLA DE MES ====== -->
+  <div id="month-screen" class="hidden">
+    <button id="back-btn" onclick="goBack()">← Volver</button>
+    <div id="month-content"></div>
+  </div>
+
+  <!-- ====== MODAL CARTA ====== -->
+  <div id="letter-modal" class="hidden">
+    <div id="letter-overlay" onclick="cerrarCarta()"></div>
+    <div id="letter-container">
+      <div id="envelope">
+        <div id="envelope-flap"></div>
+        <div id="envelope-body">
+          <div id="envelope-heart">💌</div>
+        </div>
+      </div>
+      <div id="letter-paper" class="hidden">
+        <button id="letter-close" onclick="cerrarCarta()">✕</button>
+        <div id="letter-text-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SPOTIFY WIDGET FLOTANTE ====== -->
+  <div id="spotify-player" class="hidden">
+    <div id="spotify-toggle" onclick="toggleSpotify()" title="Música">
+      <span id="spotify-icon">🎵</span>
+    </div>
+    <div id="spotify-panel">
+      <p id="spotify-label">🎶 Nuestra música</p>
+      <iframe id="spotify-iframe"
+        style="border-radius:12px"
+        src=""
+        width="100%"
+        height="152"
+        frameborder="0"
+        allowfullscreen=""
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy">
+      </iframe>
+      <p id="spotify-note">Abre Spotify para escuchar 🎧</p>
+    </div>
+  </div>
+
+  <!-- Audio SFX -->
+  <audio id="sfx-tick"><source src="audio/tick.mp3" type="audio/mpeg"/></audio>
+  <audio id="sfx-ring"><source src="audio/ring.mp3" type="audio/mpeg"/></audio>
+  <audio id="sfx-correct"><source src="audio/correct.mp3" type="audio/mpeg"/></audio>
+  <audio id="sfx-wrong"><source src="audio/wrong.mp3" type="audio/mpeg"/></audio>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
