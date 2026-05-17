@@ -1,569 +1,460 @@
 // ============================================
-//  APP.JS - Lógica principal del Wrap Aniversario
-//  v3 - Con texto animado, mapa multi-pin, vídeo en quiz
+//  DATA.JS - Contenido completo del Wrap Aniversario
+//  Carla & Josep - Mayo 2025 → Mayo 2026
 // ============================================
 
-let estadoMeses = [];
-let mesActual = null;
-let quizTimerInterval = null;
-let textoAnimadoInterval = null;
-let titleClickCount = 0;
+const SPOTIFY_URL = "https://open.spotify.com/playlist/PON_AQUI_TU_PLAYLIST";
 
-// ---- Inicialización ----
-document.addEventListener('DOMContentLoaded', () => {
-  cargarEstado();
-  iniciarIntro();
-  iniciarSpotify();
+// URL base de las fotos en GitHub
+const BASE_URL = "https://raw.githubusercontent.com/Josep-Artis/aniversario/main/carla/";
 
-  document.getElementById('password-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') checkPassword();
-  });
-
-  document.getElementById('main-title').addEventListener('click', () => {
-    titleClickCount++;
-    if (titleClickCount >= 5) { unlockAll(); titleClickCount = 0; }
-  });
-});
-
-// ---- ESTADO ----
-function cargarEstado() {
-  const guardado = localStorage.getItem('wrap-aniversario-estado');
-  if (guardado) {
-    const data = JSON.parse(guardado);
-    estadoMeses = data;
-    MESES.forEach((mes, i) => {
-      const s = estadoMeses.find(m => m.id === mes.id);
-      if (s) { MESES[i].desbloqueado = s.desbloqueado; MESES[i].completado = s.completado; }
-    });
-  } else {
-    estadoMeses = MESES.map(m => ({ id: m.id, desbloqueado: m.desbloqueado, completado: m.completado }));
-  }
-}
-
-function guardarEstado() {
-  estadoMeses = MESES.map(m => ({ id: m.id, desbloqueado: m.desbloqueado, completado: m.completado }));
-  localStorage.setItem('wrap-aniversario-estado', JSON.stringify(estadoMeses));
-}
-
-// ---- INTRO ----
-function iniciarIntro() {
-  const houseImg = document.getElementById('house-img');
-  houseImg.onerror = () => {
-    houseImg.style.display = 'none';
-    document.getElementById('house-fallback').style.display = 'block';
-  };
-  setTimeout(() => mostrarPantallaContraseña(), 5000);
-}
-
-// ---- CONTRASEÑA ----
-function mostrarPantallaContraseña() {
-  const intro = document.getElementById('intro-screen');
-  intro.style.opacity = '0';
-  setTimeout(() => {
-    intro.style.display = 'none';
-    document.getElementById('password-screen').classList.remove('hidden');
-    document.getElementById('password-input').focus();
-  }, 1000);
-}
-
-function checkPassword() {
-  const input = document.getElementById('password-input').value.trim().toLowerCase();
-  const error = document.getElementById('password-error');
-  const hint  = document.getElementById('password-hint');
-
-  if (CONTRASEÑAS_VALIDAS.includes(input)) {
-    error.classList.add('hidden');
-    hint.classList.add('hidden');
-    document.getElementById('password-screen').style.opacity = '0';
-    setTimeout(() => {
-      document.getElementById('password-screen').style.display = 'none';
-      mostrarPantallaMain();
-    }, 800);
-  } else {
-    error.classList.remove('hidden');
-    document.getElementById('password-input').value = '';
-    document.getElementById('password-input').focus();
-  }
-}
-
-function toggleHint() {
-  document.getElementById('password-hint').classList.toggle('hidden');
-}
-
-// ---- PANTALLA PRINCIPAL ----
-function mostrarPantallaMain() {
-  document.getElementById('main-screen').classList.remove('hidden');
-  document.getElementById('spotify-player').classList.remove('hidden');
-  renderizarGrid();
-}
-
-function renderizarGrid() {
-  const grid = document.getElementById('months-grid');
-  grid.innerHTML = '';
-  MESES.forEach((mes, index) => {
-    const card = document.createElement('div');
-    card.className = `month-card ${mes.desbloqueado ? 'unlocked' : 'locked'}`;
-    card.style.animationDelay = `${index * 0.08}s`;
-    card.innerHTML = `
-      <div class="month-card-inner">
-        ${mes.desbloqueado
-          ? `<div class="month-emoji">${mes.emoji}</div>
-             <div class="month-name">${mes.nombre}</div>
-             <div class="month-year">${mes.año}</div>
-             <div style="font-size:0.75rem; color:var(--text-warm); margin-top:0.3rem; text-align:center;">${mes.descripcion}</div>`
-          : `<div class="month-lock">🔒</div>
-             <div class="month-name">${mes.nombre}</div>
-             <div class="month-year">${mes.año}</div>`
-        }
-      </div>
-      ${mes.completado ? '<div class="month-check">✓</div>' : ''}
-    `;
-    if (mes.desbloqueado) card.addEventListener('click', () => abrirMes(mes));
-    grid.appendChild(card);
-  });
-}
-
-function unlockAll() {
-  MESES.forEach(m => m.desbloqueado = true);
-  guardarEstado();
-  renderizarGrid();
-  const hint = document.getElementById('unlock-hint');
-  hint.style.opacity = '1';
-  hint.style.transition = 'opacity 0.5s';
-  setTimeout(() => hint.style.opacity = '0', 3000);
-}
-
-// ---- MES ----
-function abrirMes(mes) {
-  mesActual = mes;
-  document.getElementById('main-screen').classList.add('hidden');
-  document.getElementById('month-screen').classList.remove('hidden');
-  renderizarMes(mes);
-}
-
-function goBack() {
-  if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
-  if (textoAnimadoInterval) { clearInterval(textoAnimadoInterval); textoAnimadoInterval = null; }
-  document.getElementById('month-screen').classList.add('hidden');
-  document.getElementById('main-screen').classList.remove('hidden');
-  document.getElementById('month-screen').scrollTop = 0;
-  document.querySelectorAll('#month-content video').forEach(v => v.pause());
-}
-
-function renderizarMes(mes) {
-  const content = document.getElementById('month-content');
-  content.innerHTML = '';
-
-  const header = document.createElement('div');
-  header.className = 'month-header';
-  header.innerHTML = `<h2>${mes.emoji} ${mes.nombre} ${mes.año}</h2><p>${mes.descripcion}</p>`;
-  content.appendChild(header);
-
-  let totalQuizzes = mes.contenido.filter(c => c.tipo === 'quiz').length;
-  let quizzesCompletados = 0;
-  let quizCount = 0;
-
-  // Agrupar fotos consecutivas en galerías
-  let buffer = [];
-
-  function flushBuffer() {
-    if (buffer.length === 0) return;
-    if (buffer.length === 1) {
-      content.appendChild(buffer[0]);
-    } else {
-      const gallery = document.createElement('div');
-      gallery.className = `photo-gallery cols-${Math.min(buffer.length, 3)}`;
-      buffer.forEach(el => gallery.appendChild(el));
-      content.appendChild(gallery);
-    }
-    buffer = [];
-  }
-
-  mes.contenido.forEach((bloque, i) => {
-    const delay = `${i * 0.08}s`;
-
-    if (bloque.tipo === 'texto') {
-      flushBuffer();
-      const el = document.createElement('div');
-      el.className = 'story-text';
-      el.style.animationDelay = delay;
-      el.textContent = bloque.texto;
-      content.appendChild(el);
-
-    } else if (bloque.tipo === 'texto-animado') {
-      flushBuffer();
-      // ===== TEXTO ANIMADO PALABRA A PALABRA =====
-      const el = crearTextoAnimado(bloque.texto, delay);
-      content.appendChild(el);
-
-    if (bloque.tipo === 'foto') {
-      const el = document.createElement('div');
-      el.className = 'photo-block';
-      el.style.animationDelay = delay;
-      const imgStyle = bloque.noZoom ? 'object-fit: contain; background:#f9f3e8;' : '';
-      el.innerHTML = `
-        <img src="${bloque.src}" alt="${bloque.caption}" style="${imgStyle}" onerror="this.parentElement.style.display='none'" />
-        <div class="photo-caption">${bloque.caption}</div>
-      `;
-      buffer.push(el);
-      // Flush si el siguiente NO es foto
-      const siguiente = mes.contenido[i + 1];
-      if (!siguiente || siguiente.tipo !== 'foto' || buffer.length >= 3) {
-        flushBuffer();
+const MESES = [
+  // ============================================
+  //  MAYO 2025 🌸
+  // ============================================
+  {
+    id: "mayo-2025",
+    nombre: "Mayo",
+    año: "2025",
+    emoji: "🌸",
+    descripcion: "Donde todo empezó...",
+    desbloqueado: true,
+    completado: false,
+    contenido: [
+      {
+        tipo: "texto",
+        texto: "Desde el primer mensaje ya había algo especial. Las conversaciones fluían solas, las horas pasaban sin darnos cuenta y teníamos tantas cosas en común que parecía que nos conociéramos de toda la vida. La primera vez que quedamos fue Sant Jordi — sin fotos, pero con una de esas tardes que no se olvidan. Y cuando por fin llegó el día de ir a Sant Cugat... el perro de mi madre tuvo otros planes. Pero ni eso pudo estropearlo. Ese mes fuimos al Turó de Can Mates, al Pi del Xandri, conocí a Marc y Anna, te pedí salir en Sitges, te regalé tu primer ramo, y conociste a Candela. Mayo fue el principio de todo. 🌹"
+      },
+      { tipo: "foto", src: BASE_URL + "1.jpg", caption: "📍 Primer día en Sant Cugat, Turó de Can Mates 🌳" },
+      { tipo: "foto", src: BASE_URL + "3.PNG", caption: "✨ Versión anime del primer día" },
+      { tipo: "foto", src: BASE_URL + "2.jpg", caption: "🐶 La primera foto en casa, con Candela" },
+      { tipo: "foto", src: BASE_URL + "4.jpg", caption: "🍽️ Restaurante Kemo, Barcelona" },
+      { tipo: "foto", src: BASE_URL + "5.jpg", caption: "🍽️ Restaurante Kemo, Barcelona" },
+      { tipo: "foto", src: BASE_URL + "6.jpg", caption: "🍽️ De los primeros planes juntos 💛" },
+      { tipo: "foto", src: BASE_URL + "7.jpg", caption: "🌲 El Pi del Xandri... deberíamos volver a buscarlo, ¿te acuerdas? 😄" },
+      { tipo: "foto", src: BASE_URL + "8.jpg", caption: "👋 Conociendo a Marc y Anna" },
+      { tipo: "foto", src: BASE_URL + "9.jpg", caption: "💛 El día que te pedí salir, Sitges" },
+      { tipo: "foto", src: BASE_URL + "10.jpg", caption: "🌊 Primeros días juntos en Sitges" },
+      { tipo: "foto", src: BASE_URL + "11.jpg", caption: "🐶 Haciéndote fotos a escondidas con Candela 😄", noZoom: true },
+      { tipo: "foto", src: BASE_URL + "12.jpg", caption: "🌹 Tu primer ramo", noZoom: true },
+      { tipo: "foto", src: BASE_URL + "13.jpg", caption: "🏴‍☠️ Primeros momentos en Tossa, la Cala del Pirata — bfff que bueno estaba el bocata 😄" },
+      {
+        tipo: "quiz",
+        pregunta: "¿Qué pasó la mañana que íbamos a quedar por primera vez en Sant Cugat para desayunar?",
+        opciones: ["Te mordió el perro de mi madre 🐶", "Perdí el tren", "Me quedé dormido", "Se me olvidó avisarte"],
+        correcta: 0,
+        tiempoSegundos: 60
+      },
+      { tipo: "foto", src: BASE_URL + "15.jpg", caption: "😬 Qué nervios... después de lo de tus padres" },
+      { tipo: "foto", src: BASE_URL + "18.jpg", caption: "🍹 Tomando algo en el Botanic GastroLounge de Tossa" },
+      { tipo: "foto", src: BASE_URL + "19.jpg", caption: "🍹 Botanic GastroLounge, Tossa de Mar" },
+      { tipo: "foto", src: BASE_URL + "20.jpg", caption: "🌊 Tossa de Mar", noZoom: true },
+      { tipo: "foto", src: BASE_URL + "21.jpg", caption: "🌊 Tossa de Mar" },
+      { tipo: "foto", src: BASE_URL + "22.jpg", caption: "😴 Sobada histórica — primer sticker de Carla 😂" },
+      { tipo: "foto", src: BASE_URL + "23.jpg", caption: "🪞 En mi habitación" },
+      { tipo: "foto", src: BASE_URL + "24.jpg", caption: "🏰 Castell de Sant Pere de Ribes" },
+      { tipo: "foto", src: BASE_URL + "25.jpg", caption: "🏰 Castillo de Sant Pere de Ribes" },
+      { tipo: "foto", src: BASE_URL + "26.jpg", caption: "🏰 Castillo de Sant Pere de Ribes" },
+      { tipo: "foto", src: BASE_URL + "27.jpg", caption: "🌊 Tarde en Sitges", noZoom: true },
+      { tipo: "foto", src: BASE_URL + "28.jpg", caption: "🌊 Tarde en Sitges" },
+      { tipo: "foto", src: BASE_URL + "29.jpg", caption: "🎨 Cau Ferrat, Sitges" },
+      { tipo: "foto", src: BASE_URL + "30.jpg", caption: "🌊 La Punta de Sitges" },
+      {
+        tipo: "quiz",
+        pregunta: "¿Por qué tuvimos que ir a cambiar el regalo que te hice al poco de empezar a salir?",
+        opciones: ["Me quedaba grande 💍", "Era el color equivocado", "Lo habías visto antes", "No te gustaba el modelo"],
+        correcta: 0,
+        tiempoSegundos: 0
+      },
+      { tipo: "foto", src: BASE_URL + "31.jpg", caption: "🌅 Atardecer en el Turó de Can Mates" },
+      { tipo: "foto", src: BASE_URL + "32.jpg", caption: "🌅 Turó de Can Mates, un sitio muy nuestro" },
+      { tipo: "foto", src: BASE_URL + "33.jpg", caption: "🌅 Turó de Can Mates" },
+      { tipo: "foto", src: BASE_URL + "34.jpg", caption: "🌅 Turó de Can Mates" },
+      { tipo: "foto", src: BASE_URL + "35.jpg", caption: "🌅 Turó de Can Mates", noZoom: true },
+      {
+        tipo: "mapa",
+        titulo: "Nuestros sitios de mayo 📍",
+        pines: [
+          { lat: 41.47011, lng: 2.08181, label: "🏠 Tu casa", descripcion: "Carrer de Sant Antoni, 10" },
+          { lat: 41.47578, lng: 2.06360, label: "🌳 Turó de Can Mates", descripcion: "Nuestro sitio favorito" },
+          { lat: 41.46742, lng: 2.10075, label: "🌲 Pi del Xandri", descripcion: "Ese paseo tan especial" }
+        ]
       }
+    ]
+  },
 
-    } else if (bloque.tipo === 'video') {
-      flushBuffer();
-      const el = document.createElement('div');
-      el.className = 'video-block';
-      el.style.animationDelay = delay;
-      el.innerHTML = `
-        <video controls playsinline preload="metadata">
-          <source src="${bloque.src}" type="${bloque.formato || 'video/mp4'}" />
-        </video>
-        <div class="video-caption">${bloque.caption || ''}</div>
-      `;
-      content.appendChild(el);
-
-    } else if (bloque.tipo === 'mapa') {
-      flushBuffer();
-      // ===== MAPA MULTI-PIN =====
-      const el = crearMapaMultiPin(bloque);
-      content.appendChild(el);
-
-    } else if (bloque.tipo === 'carta') {
-      flushBuffer();
-      const el = document.createElement('div');
-      el.className = 'letter-trigger';
-      el.style.animationDelay = delay;
-      el.innerHTML = `
-        <div class="letter-trigger-icon">💌</div>
-        <h3>${bloque.titulo || 'Tengo algo que decirte...'}</h3>
-        <p>Toca para abrir tu carta 💛</p>
-      `;
-      el.addEventListener('click', () => abrirCarta(bloque.texto));
-      content.appendChild(el);
-
-    } else if (bloque.tipo === 'quiz') {
-      flushBuffer();
-      quizCount++;
-      const quizEl = crearQuiz(bloque, quizCount, () => {
-        quizzesCompletados++;
-        if (quizzesCompletados >= totalQuizzes) {
-          setTimeout(() => mostrarBotonSiguienteMes(mes, content), 600);
-        }
-      });
-      content.appendChild(quizEl);
-    }
-  });
-
-  if (totalQuizzes === 0) {
-    setTimeout(() => mostrarBotonSiguienteMes(mes, content), 500);
-  }
-}
-
-// ---- TEXTO ANIMADO ----
-function crearTextoAnimado(texto, delay) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'story-text texto-animado-wrapper';
-  wrapper.style.animationDelay = delay;
-  wrapper.style.minHeight = '100px';
-
-  const display = document.createElement('div');
-  display.className = 'texto-animado-display';
-  wrapper.appendChild(display);
-
-  const btn = document.createElement('button');
-  btn.className = 'texto-animado-btn';
-  btn.textContent = '▶ Leer carta';
-  btn.onclick = () => iniciarTextoAnimado(texto, display, btn);
-  wrapper.appendChild(btn);
-
-  return wrapper;
-}
-
-function iniciarTextoAnimado(texto, display, btn) {
-  btn.style.display = 'none';
-  display.innerHTML = '';
-
-  // Separar por párrafos y luego por palabras
-  const parrafos = texto.split('\n\n');
-  let palabrasTotales = [];
-
-  parrafos.forEach((parrafo, pi) => {
-    const palabras = parrafo.trim().split(' ');
-    palabras.forEach((p, wi) => {
-      palabrasTotales.push({ texto: p, esFinParrafo: wi === palabras.length - 1 && pi < parrafos.length - 1 });
-    });
-  });
-
-  let i = 0;
-  let parrafoActual = document.createElement('p');
-  parrafoActual.style.marginBottom = '1rem';
-  display.appendChild(parrafoActual);
-
-  textoAnimadoInterval = setInterval(() => {
-    if (i >= palabrasTotales.length) {
-      clearInterval(textoAnimadoInterval);
-      textoAnimadoInterval = null;
-      return;
-    }
-
-    const item = palabrasTotales[i];
-    const span = document.createElement('span');
-    span.textContent = item.texto + ' ';
-    span.className = 'palabra-animada';
-    span.style.animationDelay = '0s';
-    parrafoActual.appendChild(span);
-
-    if (item.esFinParrafo) {
-      parrafoActual = document.createElement('p');
-      parrafoActual.style.marginBottom = '1rem';
-      display.appendChild(parrafoActual);
-    }
-
-    // Scroll suave al último elemento
-    display.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    i++;
-  }, 120); // Una palabra cada 120ms
-}
-
-// ---- MAPA MULTI-PIN ----
-function crearMapaMultiPin(bloque) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'map-block mapa-multi';
-
-  // Calcular centro del mapa
-  const lats = bloque.pines.map(p => p.lat);
-  const lngs = bloque.pines.map(p => p.lng);
-  const centerLat = (Math.min(...lats) + Math.max(...lats)) / 2;
-  const centerLng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
-
-  // Construir URL de Google Maps con múltiples marcadores
-  // Usamos el modo embed con búsqueda del centro + markers como waypoints
-  const markersParam = bloque.pines.map(p => `${p.lat},${p.lng}`).join('|');
-  
-  // Google Maps embed con múltiples pins usando el modo directions o search
-  // La forma más fiable: iframe con mapa centrado + lista de sitios debajo
-  const mapSrc = `https://maps.google.com/maps?q=${centerLat},${centerLng}&z=14&output=embed`;
-
-  wrapper.innerHTML = `
-    <div class="mapa-titulo">${bloque.titulo || 'Nuestros sitios especiales 📍'}</div>
-    <iframe
-      src="${mapSrc}"
-      loading="lazy"
-      referrerpolicy="no-referrer-when-downgrade"
-      title="${bloque.titulo || 'Mapa'}">
-    </iframe>
-    <div class="mapa-pines-lista">
-      ${bloque.pines.map(p => `
-        <a class="mapa-pin-item" href="https://maps.google.com/?q=${p.lat},${p.lng}" target="_blank">
-          <span class="mapa-pin-label">${p.label}</span>
-          <span class="mapa-pin-desc">${p.descripcion || ''}</span>
-        </a>
-      `).join('')}
-    </div>
-  `;
-
-  return wrapper;
-}
-
-// ---- CARTA ----
-function abrirCarta(texto) {
-  const modal = document.getElementById('letter-modal');
-  const envelope = document.getElementById('envelope');
-  const flap = document.getElementById('envelope-flap');
-  const paper = document.getElementById('letter-paper');
-  const textContent = document.getElementById('letter-text-content');
-
-  textContent.textContent = texto;
-  modal.classList.remove('hidden');
-  paper.classList.add('hidden');
-  envelope.style.display = 'block';
-  flap.classList.remove('open');
-
-  setTimeout(() => {
-    flap.classList.add('open');
-    setTimeout(() => {
-      envelope.style.display = 'none';
-      paper.classList.remove('hidden');
-    }, 700);
-  }, 800);
-}
-
-function cerrarCarta() {
-  document.getElementById('letter-modal').classList.add('hidden');
-  document.getElementById('envelope').style.display = 'block';
-}
-
-// ---- QUIZ ----
-function crearQuiz(bloque, numero, onCompletado) {
-  const div = document.createElement('div');
-  div.className = 'quiz-block';
-
-  const tiempoTotal = bloque.tiempoSegundos || 0;
-  const conTiempo = tiempoTotal > 0;
-  let tiempoRestante = tiempoTotal;
-  let respondido = false;
-
-  // Si el quiz tiene vídeo, lo añadimos arriba
-  let mediaHtml = '';
-  if (bloque.video) {
-    mediaHtml = `
-      <video class="quiz-photo" controls playsinline preload="metadata" style="max-height:200px; width:100%; border-radius:14px; margin-bottom:1rem;">
-        <source src="${bloque.video}" type="video/mp4" />
-      </video>
-    `;
-  } else if (bloque.foto) {
-    mediaHtml = `<img class="quiz-photo" src="${bloque.foto}" alt="Quiz" onerror="this.style.display='none'" />`;
-  }
-
-  div.innerHTML = `
-    ${mediaHtml}
-    ${conTiempo ? `
-    <div class="quiz-timer">
-      <div class="timer-bar-bg"><div class="timer-bar" id="timer-bar-${numero}" style="width:100%"></div></div>
-      <div class="timer-count" id="timer-count-${numero}">${tiempoTotal}</div>
-    </div>` : ''}
-    <div class="quiz-question">${bloque.pregunta}</div>
-    <div class="quiz-options" id="quiz-options-${numero}">
-      ${bloque.opciones.map((op, i) => `
-        <button class="quiz-option" onclick="responderQuiz(${numero}, ${i}, ${bloque.correcta}, this)" id="option-${numero}-${i}">
-          ${op}
-        </button>
-      `).join('')}
-    </div>
-    <div class="quiz-result" id="quiz-result-${numero}"></div>
-  `;
-
-  // Solo iniciar timer si hay tiempo definido
-  if (conTiempo) {
-    const tickSfx = document.getElementById('sfx-tick');
-    const ringSfx = document.getElementById('sfx-ring');
-
-    quizTimerInterval = setInterval(() => {
-      if (respondido) { clearInterval(quizTimerInterval); return; }
-      tiempoRestante--;
-      const bar   = document.getElementById(`timer-bar-${numero}`);
-      const count = document.getElementById(`timer-count-${numero}`);
-      if (bar)   bar.style.width = `${(tiempoRestante / tiempoTotal) * 100}%`;
-      if (count) {
-        count.textContent = tiempoRestante;
-        if (tiempoRestante <= 4) {
-          count.classList.add('urgent');
-          if (tickSfx && tickSfx.src) { tickSfx.currentTime = 0; tickSfx.play().catch(() => {}); }
-        }
+  // ============================================
+  //  JUNIO 2025 ☀️
+  // ============================================
+  {
+    id: "junio-2025",
+    nombre: "Junio",
+    año: "2025",
+    emoji: "☀️",
+    descripcion: "Verano, aventuras y una piscina de bolas",
+    desbloqueado: false,
+    completado: false,
+    contenido: [
+      {
+        tipo: "texto",
+        texto: "Junio llegó con calor y con ganas de aventura. Nos metimos de lleno en el Museo Ikono, donde descubrimos que los dos guardamos un niño interior que no tiene ninguna intención de crecer — especialmente tú en la piscina de bolas, que con 1,58 casi desapareces entera. 😄 Tomando algo en la plaza de casa cuando venías a verme, tardeos en Sitges, días en Tossa... y la noche de San Juan, donde lo que empezó como una bengala acabó en un duelo de varitas digno de Hogwarts. Avada Kedavra. 🪄⚡"
+      },
+      { tipo: "foto", src: BASE_URL + "37.jpg", caption: "🎨 Museo Ikono, Barcelona" },
+      { tipo: "foto", src: BASE_URL + "38.jpg", caption: "🎨 Museo Ikono" },
+      { tipo: "foto", src: BASE_URL + "40.jpg", caption: "🎱 La piscina de bolas... con 1,58 😄" },
+      { tipo: "foto", src: BASE_URL + "39.jpg", caption: "🎨 Museo Ikono" },
+      { tipo: "foto", src: BASE_URL + "41.jpg", caption: "🎨 Museo Ikono" },
+      { tipo: "foto", src: BASE_URL + "42.jpg", caption: "🎨 Museo Ikono 💛" },
+      { tipo: "foto", src: BASE_URL + "43.jpg", caption: "🌊 Tardeo en Sitges" },
+      { tipo: "foto", src: BASE_URL + "44.jpg", caption: "🌊 Tardeo en Sitges" },
+      { tipo: "foto", src: BASE_URL + "45.jpg", caption: "🌊 Tossa de Mar, antes de cenar" },
+      {
+        tipo: "video",
+        src: BASE_URL + "45.5",
+        caption: "🪄 Noche de San Juan — duelo de varitas nivel Hogwarts ⚡",
+        formato: "video/mp4"
       }
-      if (tiempoRestante <= 0) {
-        clearInterval(quizTimerInterval);
-        if (!respondido) {
-          respondido = true;
-          if (ringSfx && ringSfx.src) { ringSfx.currentTime = 0; ringSfx.play().catch(() => {}); }
-          tiempoAgotado(numero, bloque.correcta, bloque.opciones, onCompletado);
-        }
+    ]
+  },
+
+  // ============================================
+  //  JULIO 2025 🏖️
+  // ============================================
+  {
+    id: "julio-2025",
+    nombre: "Julio",
+    año: "2025",
+    emoji: "🏖️",
+    descripcion: "Primeras vacaciones juntos 🌴",
+    desbloqueado: false,
+    completado: false,
+    contenido: [
+      {
+        tipo: "texto",
+        texto: "Julio fue de esos meses que te dejan con una sonrisa permanente. Cine en Sant Cugat para ver Cómo Entrenar a Tu Dragón — con pizza incluida y una crepe de Nutella con helado que todavía me debes, por cierto. 👀 Tomando algo tranquilos en la plaza de casa. Y el broche de oro: nuestras primeras vacaciones juntos en Mallorca, en el Sun Club El Dorado. Todo incluido, el sol, el mar, y tú. No se puede pedir más. 🌴"
+      },
+      { tipo: "foto", src: BASE_URL + "46.jpg", caption: "🐉 Cine en Sant Cugat — Cómo Entrenar a Tu Dragón" },
+      {
+        tipo: "quiz",
+        foto: BASE_URL + "46.jpg",
+        pregunta: "¿Qué comimos el día que fuimos al cine a ver Cómo Entrenar a Tu Dragón?",
+        opciones: ["Pizza 🍕", "Hamburguesa 🍔", "Sushi 🍣", "Bocadillo 🥖"],
+        correcta: 0,
+        tiempoSegundos: 0
+      },
+      {
+        tipo: "quiz",
+        pregunta: "¿Con qué te quedaste con ganas ese día... y que todavía me debes? 👀",
+        opciones: ["Crepe de Nutella con helado 🥞", "Churros con chocolate", "Tarta de queso", "Donuts"],
+        correcta: 0,
+        tiempoSegundos: 0
+      },
+      { tipo: "foto", src: BASE_URL + "47.jpg", caption: "☕ Tomando algo en la plaza de la Mercè, Sant Pere de Ribes" },
+      { tipo: "foto", src: BASE_URL + "48.jpg", caption: "🌴 Primeras vacaciones juntos — Mallorca" },
+      { tipo: "foto", src: BASE_URL + "49.jpg", caption: "🌴 Sun Club El Dorado, Mallorca" },
+      { tipo: "foto", src: BASE_URL + "50.jpg", caption: "🌴 Mallorca 💛" },
+      { tipo: "foto", src: BASE_URL + "51.jpg", caption: "🌴 Mallorca" },
+      { tipo: "foto", src: BASE_URL + "52.jpg", caption: "🌴 Mallorca, todo incluido y tú 🌊" }
+    ]
+  },
+
+  // ============================================
+  //  AGOSTO 2025 🌊
+  // ============================================
+  {
+    id: "agosto-2025",
+    nombre: "Agosto",
+    año: "2025",
+    emoji: "🌊",
+    descripcion: "Tossa, excursiones y últimos días de verano",
+    desbloqueado: false,
+    completado: false,
+    contenido: [
+      {
+        tipo: "texto",
+        texto: "Agosto olía a verano, a Tossa de Mar y a helado después de cenar. Noches viendo el castillo iluminado, excursión a Cala Giverola, un italiano con una lasaña que estaba de escándalo 👀, y la aventura de Blanes con el jardín botánico. También el día que conocí a Joel y a Blay — vaya dos, me caen genial. Y los últimos días de verano apurando cada momento, sabiendo que septiembre estaba a la vuelta de la esquina."
+      },
+      { tipo: "foto", src: BASE_URL + "53.jpg", caption: "🏰 Tossa de Mar, el castillo de noche" },
+      { tipo: "foto", src: BASE_URL + "54.jpg", caption: "🍦 Helado después de cenar, el mejor plan" },
+      { tipo: "foto", src: BASE_URL + "55.jpg", caption: "👋 Con NikiNikol, Joel y Blay — salida por Lloret" },
+      { tipo: "foto", src: BASE_URL + "56.jpg", caption: "🎉 Primera vez que conocí a Joel y Blay, vaya genios" },
+      { tipo: "foto", src: BASE_URL + "57.jpg", caption: "🍽️ Cenando por Tossa" },
+      { tipo: "foto", src: BASE_URL + "58.jpg", caption: "🍽️ Cenando por Tossa" },
+      { tipo: "foto", src: BASE_URL + "60.jpg", caption: "🏖️ Excursión a Cala Giverola" },
+      { tipo: "foto", src: BASE_URL + "61.jpg", caption: "🏖️ Cala Giverola, Tossa de Mar" },
+      { tipo: "foto", src: BASE_URL + "62.jpg", caption: "🏖️ Cala Giverola" },
+      { tipo: "foto", src: BASE_URL + "63.jpg", caption: "🏖️ Cala Giverola" },
+      { tipo: "foto", src: BASE_URL + "64.jpg", caption: "🏖️ Cala Giverola" },
+      { tipo: "foto", src: BASE_URL + "65.jpg", caption: "🏖️ Cala Giverola" },
+      { tipo: "foto", src: BASE_URL + "67.jpg", caption: "🏖️ Cala Giverola 💛" },
+      { tipo: "foto", src: BASE_URL + "68.jpg", caption: "🍝 Italiano en Tossa... ¿estaba buena la lasaña? 👀" },
+      { tipo: "foto", src: BASE_URL + "69.jpg", caption: "🌿 Excursión a Blanes — Jardín Botánico" },
+      { tipo: "foto", src: BASE_URL + "70.jpg", caption: "🌿 Jardín Botánico de Blanes" },
+      { tipo: "foto", src: BASE_URL + "71.jpg", caption: "🌿 Jardín Botánico de Blanes" },
+      { tipo: "foto", src: BASE_URL + "72.jpg", caption: "🌿 Jardín Botánico de Blanes" },
+      { tipo: "foto", src: BASE_URL + "73.jpg", caption: "🌿 Jardín Botánico de Blanes" },
+      { tipo: "foto", src: BASE_URL + "74.jpg", caption: "🌿 Jardín Botánico de Blanes" },
+      { tipo: "foto", src: BASE_URL + "75.jpg", caption: "🌿 Jardín Botánico de Blanes" },
+      { tipo: "foto", src: BASE_URL + "76.jpg", caption: "🌿 Jardín Botánico de Blanes" },
+      { tipo: "foto", src: BASE_URL + "77.jpg", caption: "🌿 Jardín Botánico de Blanes" },
+      { tipo: "foto", src: BASE_URL + "78.jpg", caption: "🌿 Jardín Botánico de Blanes" },
+      { tipo: "foto", src: BASE_URL + "79.jpg", caption: "🌿 Jardín Botánico de Blanes" },
+      { tipo: "foto", src: BASE_URL + "80.jpg", caption: "🌿 Jardín Botánico de Blanes" },
+      { tipo: "foto", src: BASE_URL + "81.jpg", caption: "🌿 Blanes 💛" },
+      { tipo: "foto", src: BASE_URL + "82.jpg", caption: "🌅 Últimos días de verano en Tossa" },
+      { tipo: "foto", src: BASE_URL + "83.jpg", caption: "🌅 Apurando el verano" },
+      { tipo: "foto", src: BASE_URL + "84.jpg", caption: "🌅 Tossa de Mar" },
+      { tipo: "foto", src: BASE_URL + "85.jpg", caption: "🌅 Últimos días de verano 💛" }
+    ]
+  },
+
+  // ============================================
+  //  SEPTIEMBRE 2025 🍂
+  // ============================================
+  {
+    id: "septiembre-2025",
+    nombre: "Septiembre",
+    año: "2025",
+    emoji: "🍂",
+    descripcion: "El mes del cambio",
+    desbloqueado: false,
+    completado: false,
+    contenido: [
+      {
+        tipo: "texto-animado",
+        texto: "Empezamos nuestra historia y, como dice la canción de Little Things, sentí que tu mano encajaba perfectamente en la mía. Todo fue un torbellino emocional que subió cual tsunami — y entonces llegó septiembre.\n\nNo voy a mentir, me daba miedo. En mayo nos reíamos diciendo 'bua, no queda ni nada' — refiriéndonos a que quedaba mucho para septiembre — y de repente llegó. Tú estudiando y trabajando, yo metiéndome de cabeza en la aventura informática que tanto quebradero de cabeza me ha dado, y trabajando todos los fines de semana. De vernos cada día pasamos a vernos una vez a la semana.\n\nSabíamos que se haría cuesta arriba, y aún así lo conseguimos. Aprovechamos cada momento que aparecía.\n\nAmor, quiero darte las gracias de corazón, porque no sabes el poder que tienes. Con solo mirarme me das una fuerza sobrehumana digna de un superguerrer — como buen discípulo de Goku y Vegeta que soy. Muchas veces me he sentido abrumado, mil voladuras me han pasado por la mente, y gracias a ti he sabido focalizarme. Esto es ahora, pero luego nos reiremos. Porque todo esto es por ti, por mí, por nosotros. Tú eres mi fuerza, amor. 💛"
+      },
+      {
+        tipo: "quiz",
+        video: BASE_URL + "36.MOV",
+        pregunta: "🎧 Escucha este audio... ¿de qué momento de nuestra historia es?",
+        opciones: [
+          "Saltando a una piscina de bolas 🎱",
+          "En la montaña rusa 🎢",
+          "Gritando porque vio una araña 🕷️",
+          "Cantando en el coche 🎤"
+        ],
+        correcta: 0,
+        tiempoSegundos: 0
       }
-    }, 1000);
+    ]
+  },
+
+  // ============================================
+  //  OCTUBRE 2025 🎃
+  // ============================================
+  {
+    id: "octubre-2025",
+    nombre: "Octubre",
+    año: "2025",
+    emoji: "🎃",
+    descripcion: "Skincare y chino, el plan perfecto",
+    desbloqueado: false,
+    completado: false,
+    contenido: [
+      {
+        tipo: "texto",
+        texto: "Octubre llegó tranquilo y lo aprovechamos a nuestra manera. Sesión de skincare — porque el cuidado de la piel es cosa de dos — y una cenita en el chino que ya se ha convertido en un clásico nuestro. A veces los mejores planes son los más sencillos. 🥢"
+      },
+      { tipo: "foto", src: BASE_URL + "86.jpg", caption: "💆 Sesión de skincare 🧴" },
+      { tipo: "foto", src: BASE_URL + "87.jpg", caption: "💆 Skincare en pareja, lo más" },
+      { tipo: "foto", src: BASE_URL + "88.jpg", caption: "🥢 Cenita en el chino, un clásico" },
+      { tipo: "foto", src: BASE_URL + "89.jpg", caption: "🥢 El chino de siempre 💛" }
+    ]
+  },
+
+  // ============================================
+  //  NOVIEMBRE 2025 🌧️
+  // ============================================
+  {
+    id: "noviembre-2025",
+    nombre: "Noviembre",
+    año: "2025",
+    emoji: "🌧️",
+    descripcion: "Una carta para ti",
+    desbloqueado: false,
+    completado: false,
+    contenido: [
+      {
+        tipo: "texto-animado",
+        texto: "Sé que eres más de cartas escritas en papel, pero de todas las hadas que podían tocarte te ha tocado el frikhadas — así que ya que me dejo los ojos en la pantalla por clase, no me los iba a dejar también por la persona que más quiero.\n\nEste año ha sido un año de cambio, de reconstrucción, de superación. Un poco de todo. Y de la nada apareciste tú, para darme un soplo de vida cuando más lo necesitaba. Sin buscar nada, encontré mi otra mitad. A mi compañera, a mi mujer, a la que quiero que sea la madre de mis hijos.\n\nNo tengo palabras para lo que siento por ti, amor. Nunca he tenido a nadie tan bueno en mi vida — en ningún sentido. Cuando me abrazas, cuando me miras, cuando me tocas, cuando me hablas... lo en paz que me siento cuando me duermo en tu pecho. Eres una mujer increíble.\n\nTu hermana Nuria tenía razón cuando me dijo en Tossa que tú desprendes luz. En ese momento ya era consciente de ello — pero ahora, después de un año contigo, quiero ser el guardián de esa sonrisa, de esa mirada y de esa luz. Protegiéndola, protegiéndote, con mi vida si hace falta.\n\nEste curso ha sido duro. Volver a estudiar trabajando los dos, pasar de vernos cada día a vernos una vez a la semana. Yo voy de duro pero se me ha hecho duro de cojones. Y aún así aquí estamos — porque lo que tenemos vale cada segundo.\n\nEstoy orgulloso de la mujer que eres. De las notas que sacas, del esfuerzo que le pones — nada de eso es en vano. Sabes que siempre voy a estar ahí para ti. Nunca vas a estar sola. Si tengo que enfrentarme al mundo entero por ti, lo haré con mucho gusto y con una sonrisa.\n\nSiempre tendrás a alguien con quien reír, con quien llorar, con quien compartir cada cosa — grande o pequeña. Nunca voy a minimizar nada que te importe, porque tú eres lo que más me importa.\n\nTe quiero, amor. Hoy y siempre. 💛"
+      }
+    ]
+  },
+
+  // ============================================
+  //  DICIEMBRE 2025 🎄
+  // ============================================
+  {
+    id: "diciembre-2025",
+    nombre: "Diciembre",
+    año: "2025",
+    emoji: "🎄",
+    descripcion: "Tu cumple, la Navidad y Nochevieja",
+    desbloqueado: false,
+    completado: false,
+    contenido: [
+      {
+        tipo: "texto",
+        texto: "Diciembre llegó cargado de magia. Primero tu cumpleaños — las luces de Barcelona de fondo, las velas que soplaste, y esas fotos tuyas de pequeña que demuestran que ya eras igual de guapa. 😄 Y luego la escapada que me regalaste: un hotel en Barcelona, spa y cena romántica. Después de meses de poco tiempo juntos, lo necesitábamos más que el aire. El broche final: Nochevieja. Ese vestido, esa noche, tú. No hacía falta nada más. 🥂✨"
+      },
+      { tipo: "foto", src: BASE_URL + "93.jpg", caption: "✨ Luces de Navidad por Barcelona 🎄" },
+      { tipo: "foto", src: BASE_URL + "94.jpg", caption: "✨ Luces de Barcelona" },
+      { tipo: "foto", src: BASE_URL + "95.jpg", caption: "✨ Barcelona en Navidad" },
+      { tipo: "foto", src: BASE_URL + "91.jpg", caption: "🎂 Soplando las velas 🥳" },
+      { tipo: "foto", src: BASE_URL + "92.jpg", caption: "🎂 ¡Feliz cumpleaños, amor! 💛" },
+      { tipo: "foto", src: BASE_URL + "90.jpg", caption: "👶 De pequeñita... ya eras igual de guapa 😄" },
+      { tipo: "foto", src: BASE_URL + "96.jpg", caption: "👶 Fotos de cuando eras peque 🥹" },
+      { tipo: "foto", src: BASE_URL + "97.jpg", caption: "👶 Carla de pequeña 💛" },
+      { tipo: "foto", src: BASE_URL + "98.jpg", caption: "👶 Qué cosita 🥹" },
+      { tipo: "foto", src: BASE_URL + "99.jpg", caption: "👶 La misma sonrisa de siempre 💛" },
+      { tipo: "foto", src: BASE_URL + "100.jpg", caption: "🛁 Escapada romántica — Hotel en Barcelona" },
+      { tipo: "foto", src: BASE_URL + "101.jpg", caption: "🛁 Spa y desconexión total" },
+      { tipo: "foto", src: BASE_URL + "102.jpg", caption: "🛁 Lo necesitábamos más que el aire" },
+      { tipo: "foto", src: BASE_URL + "103.jpg", caption: "🍷 Cena romántica 💛" },
+      { tipo: "foto", src: BASE_URL + "104.jpg", caption: "🍷 Hotel Barcelona" },
+      { tipo: "foto", src: BASE_URL + "105.jpg", caption: "🛁 Escapada perfecta" },
+      { tipo: "foto", src: BASE_URL + "106.jpg", caption: "💛 Hotel Barcelona" },
+      { tipo: "foto", src: BASE_URL + "107.jpg", caption: "💛 Escapada romántica" },
+      { tipo: "foto", src: BASE_URL + "108.jpg", caption: "💛 Diciembre en Barcelona" },
+      { tipo: "foto", src: BASE_URL + "109.jpg", caption: "💛 Escapada" },
+      { tipo: "foto", src: BASE_URL + "110.jpg", caption: "💛 Hotel Barcelona" },
+      { tipo: "foto", src: BASE_URL + "111.jpg", caption: "💛 Escapada romántica" },
+      { tipo: "foto", src: BASE_URL + "112.jpg", caption: "💛 Barcelona" },
+      { tipo: "foto", src: BASE_URL + "113.jpg", caption: "💛 Escapada" },
+      { tipo: "foto", src: BASE_URL + "114.jpg", caption: "💛 El mejor regalo 🛁" },
+      { tipo: "foto", src: BASE_URL + "115.jpg", caption: "🥂 Nochevieja — ese vestido, esa noche, tú ✨" },
+      { tipo: "foto", src: BASE_URL + "116.jpg", caption: "🥂 Nochevieja 2025" },
+      { tipo: "foto", src: BASE_URL + "117.jpg", caption: "🥂 Qué guapa eres, cabrona 😍" },
+      { tipo: "foto", src: BASE_URL + "118.jpg", caption: "🥂 Nochevieja juntos" },
+      { tipo: "foto", src: BASE_URL + "119.jpg", caption: "🥂 Fin de año 2025" },
+      { tipo: "foto", src: BASE_URL + "120.jpg", caption: "🥂 Nochevieja" },
+      { tipo: "foto", src: BASE_URL + "121.jpg", caption: "🥂 Feliz Año Nuevo, mi amor 💛" }
+    ]
+  },
+
+  // ============================================
+  //  ENERO 2026 🎆
+  // ============================================
+  {
+    id: "enero-2026",
+    nombre: "Enero",
+    año: "2026",
+    emoji: "🎆",
+    descripcion: "Año nuevo, nosotros",
+    desbloqueado: false,
+    completado: false,
+    contenido: [
+      {
+        tipo: "texto",
+        texto: "Año nuevo con las pilas cargadas. Enero empezó con el pequeño Nil — que ya tiene un tío favorito, aunque él todavía no lo sabe. Y acabó con algo especial: un espectáculo de música en vivo en la Basílica de Santa Maria del Pi, con esa luz y esa acústica que te pone los pelos de punta. Buen comienzo de año. 🎶"
+      },
+      { tipo: "foto", src: BASE_URL + "122.jpg", caption: "👶 Con el pequeño Nil 🥹" },
+      { tipo: "foto", src: BASE_URL + "123.jpg", caption: "🎶 Espectáculo Luminiscent — Basílica de Santa Maria del Pi" },
+      { tipo: "foto", src: BASE_URL + "124.jpg", caption: "🎶 Santa Maria del Pi, Barcelona" },
+      { tipo: "foto", src: BASE_URL + "125.jpg", caption: "🎶 Luminiscent ✨" },
+      { tipo: "foto", src: BASE_URL + "126.jpg", caption: "🎶 Una noche muy especial 💛" }
+    ]
+  },
+
+  // ============================================
+  //  FEBRERO 2026 ❤️
+  // ============================================
+  {
+    id: "febrero-2026",
+    nombre: "Febrero",
+    año: "2026",
+    emoji: "❤️",
+    descripcion: "San Valentín, a nuestra manera",
+    desbloqueado: false,
+    completado: false,
+    contenido: [
+      {
+        tipo: "texto",
+        texto: "San Valentín llegó antes de tiempo — porque los dos teníamos la agenda llena y el amor no entiende de fechas exactas. Cuando por fin pudimos vernos, lo celebramos como se merece: algo para beber, una cenita, y lo más importante, estar juntos. Que al final es de lo único que se trata. ❤️"
+      },
+      { tipo: "foto", src: BASE_URL + "127.jpg", caption: "❤️ San Valentín a nuestra manera" },
+      { tipo: "foto", src: BASE_URL + "128.jpg", caption: "❤️ Porque el amor no entiende de fechas 💛" }
+    ]
+  },
+
+  // ============================================
+  //  MARZO 2026 🌷
+  // ============================================
+  {
+    id: "marzo-2026",
+    nombre: "Marzo",
+    año: "2026",
+    emoji: "🌷",
+    descripcion: "Semana Santa y Pompeya",
+    desbloqueado: false,
+    completado: false,
+    contenido: [
+      {
+        tipo: "texto",
+        texto: "Semana Santa y por fin tiempo para respirar juntos. Un picnic en Montjuïc escuchando música con Barcelona a los pies, el jardín botánico, el sol dando en la cara... y al día siguiente, un salto al pasado en la exposición de Pompeya en realidad virtual. De la calma absoluta al Vesubio en erupción. Así somos nosotros. 🌋"
+      },
+      { tipo: "foto", src: BASE_URL + "129.jpg", caption: "🌿 Picnic en Montjuïc, Barcelona al sol ☀️" },
+      { tipo: "foto", src: BASE_URL + "130.jpg", caption: "🌿 Montjuïc — música y Barcelona a los pies" },
+      { tipo: "foto", src: BASE_URL + "131.jpg", caption: "🏛️ Exposición de Pompeya — Realidad Virtual" },
+      { tipo: "foto", src: BASE_URL + "132.jpg", caption: "🏛️ Pompeya VR 💛" }
+    ]
+  },
+
+  // ============================================
+  //  ABRIL 2026 🎈
+  // ============================================
+  {
+    id: "abril-2026",
+    nombre: "Abril",
+    año: "2026",
+    emoji: "🎈",
+    descripcion: "Michael Jackson y Sant Jordi",
+    desbloqueado: false,
+    completado: false,
+    contenido: [
+      {
+        tipo: "texto",
+        texto: "Abril llegó con Michael Jackson y con nuestro primer Sant Jordi oficial juntos. 🌹 El biopic en el cine, la rosa, y la sensación de que un año da para mucho cuando lo vives con la persona correcta. Que ya falta poco, amor. 🎈"
+      },
+      { tipo: "foto", src: BASE_URL + "133.jpg", caption: "🎬 Cine — Michael Jackson Biopic 🎵" },
+      { tipo: "foto", src: BASE_URL + "134.jpg", caption: "🎬 Michael Jackson 🎵" },
+      { tipo: "foto", src: BASE_URL + "135.jpg", caption: "🎬 Cine juntos" },
+      { tipo: "foto", src: BASE_URL + "136.jpg", caption: "🎬 Abril 2026" },
+      { tipo: "foto", src: BASE_URL + "137.jpg", caption: "🌹 Nuestro primer Sant Jordi oficial juntos 💛" }
+    ]
+  },
+
+  // ============================================
+  //  MAYO 2026 🎈
+  // ============================================
+  {
+    id: "mayo-2026",
+    nombre: "Mayo",
+    año: "2026",
+    emoji: "🎈",
+    descripcion: "Un año juntos",
+    desbloqueado: false,
+    completado: false,
+    contenido: [
+      {
+        tipo: "texto",
+        texto: "De dos extraños que se cruzaron por casualidades de la vida, a serlo todo el uno para el otro. Hay una foto tuya que defendería con mi vida. Puede que seas consciente de cómo me miras — o puede que no del todo. Pero esa mirada tuya que dice 'estoy aquí, tranquilo, confío en ti, estoy orgullosa de ti'... me convierte en Super Saiyan full power. Por muy reventado o cansado que esté, nadie ni nada puede conmigo cuando me miras así. Gracias por este año, amor. Gracias por ser tú. 💛🎈"
+      },
+      { tipo: "foto", src: BASE_URL + "138.jpeg", caption: "💛 Esa mirada que me lo da todo" },
+      { tipo: "foto", src: BASE_URL + "139.jpeg", caption: "🎈 Un año juntos" },
+      { tipo: "foto", src: BASE_URL + "140.jpeg", caption: "🎈 Feliz aniversario, mi amor 💛" }
+    ]
   }
+];
 
-  div.dataset.quizNumero = numero;
-  div._onCompletado = onCompletado;
-  return div;
-}
-
-function responderQuiz(numero, seleccion, correcta, btnEl) {
-  const options = document.querySelectorAll(`#quiz-options-${numero} .quiz-option`);
-  const result  = document.getElementById(`quiz-result-${numero}`);
-  options.forEach(b => b.disabled = true);
-  options[correcta].classList.add('correct');
-  if (seleccion !== correcta) btnEl.classList.add('wrong');
-  if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
-
-  const correcto = seleccion === correcta;
-  if (correcto) {
-    const sfx = document.getElementById('sfx-correct');
-    if (sfx && sfx.src) { sfx.currentTime = 0; sfx.play().catch(() => {}); }
-    result.className = 'quiz-result correct-result';
-    result.textContent = '¡Correcto! 🎉 Lo sabía que te acordabas 💛';
-  } else {
-    const sfx = document.getElementById('sfx-wrong');
-    if (sfx && sfx.src) { sfx.currentTime = 0; sfx.play().catch(() => {}); }
-    result.className = 'quiz-result wrong-result';
-    result.textContent = `❌ ¡Casi! La respuesta era: "${document.getElementById(`option-${numero}-${correcta}`).textContent.trim()}"`;
-  }
-
-  // Llamar el callback del quiz actual
-  setTimeout(() => {
-    const thisBlock = document.querySelector(`.quiz-block[data-quiz-numero="${numero}"]`);
-    if (thisBlock && thisBlock._onCompletado) {
-      thisBlock._onCompletado();
-      thisBlock._onCompletado = null;
-    }
-  }, 1500);
-}
-
-function tiempoAgotado(numero, correcta, opciones, onCompletado) {
-  const options = document.querySelectorAll(`#quiz-options-${numero} .quiz-option`);
-  const result  = document.getElementById(`quiz-result-${numero}`);
-  options.forEach(b => b.disabled = true);
-  options[correcta].classList.add('correct');
-  result.className = 'quiz-result wrong-result';
-  result.textContent = `⏰ ¡Se acabó el tiempo! La respuesta era: "${opciones[correcta]}"`;
-  setTimeout(() => { if (onCompletado) onCompletado(); }, 1500);
-}
-
-// ---- BOTÓN SIGUIENTE MES ----
-function mostrarBotonSiguienteMes(mes, content) {
-  mes.completado = true;
-  const idx = MESES.findIndex(m => m.id === mes.id);
-  if (idx !== -1 && idx < MESES.length - 1) MESES[idx + 1].desbloqueado = true;
-  guardarEstado();
-
-  const esUltimo = idx === MESES.length - 1;
-  const btn = document.createElement('div');
-
-  if (esUltimo) {
-    btn.innerHTML = `
-      <div style="text-align:center; padding:2rem 1rem;">
-        <div style="font-size:3rem; margin-bottom:1rem;">🎈❤️🎈</div>
-        <h2 style="font-family:'Pacifico',cursive; font-size:1.8rem; color:#3D2B1F; margin-bottom:1rem;">
-          ¡Feliz aniversario, mi amor!
-        </h2>
-        <p style="color:#7A4F2E; font-size:1.1rem; line-height:1.7; font-weight:500;">
-          Un año increíble a tu lado. Gracias por cada momento, cada risa y cada abrazo.
-          Eres lo mejor que me ha pasado. Te quiero muchísimo. 💛
-        </p>
-        <div style="font-size:2rem; margin-top:1.5rem;">🌹🏠🎈</div>
-      </div>
-    `;
-  } else {
-    const sig = MESES[idx + 1];
-    btn.innerHTML = `
-      <button class="next-month-btn" onclick="goBack()">
-        🔓 ¡${sig.nombre} desbloqueado! Volver al inicio →
-      </button>
-    `;
-  }
-
-  content.appendChild(btn);
-  setTimeout(() => btn.scrollIntoView({ behavior: 'smooth', block: 'end' }), 200);
-}
-
-// ---- SPOTIFY ----
-function iniciarSpotify() {
-  if (!SPOTIFY_URL || SPOTIFY_URL.includes('PON_AQUI')) return;
-
-  let embedUrl = SPOTIFY_URL;
-  if (SPOTIFY_URL.includes('open.spotify.com') && !SPOTIFY_URL.includes('/embed/')) {
-    embedUrl = SPOTIFY_URL.replace('open.spotify.com/', 'open.spotify.com/embed/');
-    embedUrl = embedUrl.split('?')[0];
-  }
-
-  const iframe = document.getElementById('spotify-iframe');
-  if (iframe) iframe.src = embedUrl + '?utm_source=generator&theme=0';
-}
-
-function toggleSpotify() {
-  const panel = document.getElementById('spotify-panel');
-  panel.classList.toggle('open');
-  document.getElementById('spotify-icon').textContent = panel.classList.contains('open') ? '✕' : '🎵';
-}
+// ====================================================
+//  CONTRASEÑAS VÁLIDAS
+// ====================================================
+const CONTRASEÑAS_VALIDAS = [
+  "sant jordi",
+  "23 de abril",
+  "23/04/2025",
+  "23 abril",
+  "sant jordi 2025"
+];
