@@ -31,51 +31,51 @@ const MESES = [
       { tipo: "foto", src: BASE_URL + "4.jpg", caption: "🍽️ Restaurante Kemo, Barcelona" },
       { tipo: "foto", src: BASE_URL + "5.jpg", caption: "🍽️ Restaurante Kemo, Barcelona" },
       { tipo: "foto", src: BASE_URL + "6.jpg", caption: "🍽️ De los primeros planes juntos 💛" },
-      { tipo: "foto", src: BASE_URL + "7.jpg", caption: "🌲 El Pi del Xandri, un sitio muy nuestro" },
+      { tipo: "foto", src: BASE_URL + "7.jpg", caption: "🌲 El Pi del Xandri... deberíamos volver a buscarlo, ¿te acuerdas? 😄" },
       { tipo: "foto", src: BASE_URL + "8.jpg", caption: "👋 Conociendo a Marc y Anna" },
       { tipo: "foto", src: BASE_URL + "9.jpg", caption: "💛 El día que te pedí salir, Sitges" },
       { tipo: "foto", src: BASE_URL + "10.jpg", caption: "🌊 Primeros días juntos en Sitges" },
-      { tipo: "foto", src: BASE_URL + "11.jpg", caption: "🌊 Sitges, nuestros comienzos" },
-      { tipo: "foto", src: BASE_URL + "12.jpg", caption: "🌹 Tu primer ramo" },
-      { tipo: "foto", src: BASE_URL + "13.jpg", caption: "💛 Mayo 2025" },
+      { tipo: "foto", src: BASE_URL + "11.jpg", caption: "🐶 Haciéndote fotos a escondidas con Candela 😄", noZoom: true },
+      { tipo: "foto", src: BASE_URL + "12.jpg", caption: "🌹 Tu primer ramo", noZoom: true },
+      { tipo: "foto", src: BASE_URL + "13.jpg", caption: "🏴‍☠️ Primeros momentos en Tossa, la Cala del Pirata — bfff que bueno estaba el bocata 😄" },
       {
         tipo: "quiz",
         pregunta: "¿Qué pasó la mañana que íbamos a quedar por primera vez en Sant Cugat para desayunar?",
         opciones: ["Te mordió el perro de mi madre 🐶", "Perdí el tren", "Me quedé dormido", "Se me olvidó avisarte"],
         correcta: 0,
-        tiempoSegundos: 15
+        tiempoSegundos: 0
       },
-      { tipo: "foto", src: BASE_URL + "15.jpg", caption: "🌊 Primera vez en Tossa de Mar con tus padres" },
-      { tipo: "foto", src: BASE_URL + "18.jpg", caption: "🌊 Tossa de Mar" },
-      { tipo: "foto", src: BASE_URL + "19.jpg", caption: "🌊 Tossa de Mar" },
-      { tipo: "foto", src: BASE_URL + "20.jpg", caption: "🌊 Tossa de Mar" },
+      { tipo: "foto", src: BASE_URL + "15.jpg", caption: "😬 Qué nervios... después de lo de tus padres" },
+      { tipo: "foto", src: BASE_URL + "18.jpg", caption: "🍹 Tomando algo en el Botanic GastroLounge de Tossa" },
+      { tipo: "foto", src: BASE_URL + "19.jpg", caption: "🍹 Botanic GastroLounge, Tossa de Mar" },
+      { tipo: "foto", src: BASE_URL + "20.jpg", caption: "🌊 Tossa de Mar", noZoom: true },
       { tipo: "foto", src: BASE_URL + "21.jpg", caption: "🌊 Tossa de Mar" },
-      { tipo: "foto", src: BASE_URL + "22.jpg", caption: "🌊 Tossa de Mar con tu familia 💛" },
+      { tipo: "foto", src: BASE_URL + "22.jpg", caption: "😴 Sobada histórica — primer sticker de Carla 😂" },
       { tipo: "foto", src: BASE_URL + "23.jpg", caption: "🪞 En mi habitación" },
-      { tipo: "foto", src: BASE_URL + "24.jpg", caption: "🪞 En mi habitación" },
+      { tipo: "foto", src: BASE_URL + "24.jpg", caption: "🏰 Castell de Sant Pere de Ribes" },
       { tipo: "foto", src: BASE_URL + "25.jpg", caption: "🏰 Castillo de Sant Pere de Ribes" },
       { tipo: "foto", src: BASE_URL + "26.jpg", caption: "🏰 Castillo de Sant Pere de Ribes" },
-      { tipo: "foto", src: BASE_URL + "27.jpg", caption: "🌊 Tarde en Sitges" },
+      { tipo: "foto", src: BASE_URL + "27.jpg", caption: "🌊 Tarde en Sitges", noZoom: true },
       { tipo: "foto", src: BASE_URL + "28.jpg", caption: "🌊 Tarde en Sitges" },
-      { tipo: "foto", src: BASE_URL + "29.jpg", caption: "🌊 Tarde en Sitges" },
-      { tipo: "foto", src: BASE_URL + "30.jpg", caption: "🌊 Tarde en Sitges" },
+      { tipo: "foto", src: BASE_URL + "29.jpg", caption: "🎨 Cau Ferrat, Sitges" },
+      { tipo: "foto", src: BASE_URL + "30.jpg", caption: "🌊 La Punta de Sitges" },
       {
         tipo: "quiz",
         pregunta: "¿Por qué tuvimos que ir a cambiar el regalo que te hice al poco de empezar a salir?",
         opciones: ["Me quedaba grande 💍", "Era el color equivocado", "Lo habías visto antes", "No te gustaba el modelo"],
         correcta: 0,
-        tiempoSegundos: 15
+        tiempoSegundos: 0
       },
       { tipo: "foto", src: BASE_URL + "31.jpg", caption: "🌅 Atardecer en el Turó de Can Mates" },
       { tipo: "foto", src: BASE_URL + "32.jpg", caption: "🌅 Turó de Can Mates, un sitio muy nuestro" },
       { tipo: "foto", src: BASE_URL + "33.jpg", caption: "🌅 Turó de Can Mates" },
       { tipo: "foto", src: BASE_URL + "34.jpg", caption: "🌅 Turó de Can Mates" },
-      { tipo: "foto", src: BASE_URL + "35.jpg", caption: "💛 En tu casa, Sant Cugat" },
+      { tipo: "foto", src: BASE_URL + "35.jpg", caption: "🌅 Turó de Can Mates", noZoom: true },
       {
         tipo: "mapa",
         titulo: "Nuestros sitios de mayo 📍",
         pines: [
-          { lat: 41.4726, lng: 2.0054, label: "🏠 Tu casa", descripcion: "Carrer de Sant Antoni, 10" },
+          { lat: 41.47011, lng: 2.08181, label: "🏠 Tu casa", descripcion: "Carrer de Sant Antoni, 10" },
           { lat: 41.47578, lng: 2.06360, label: "🌳 Turó de Can Mates", descripcion: "Nuestro sitio favorito" },
           { lat: 41.46742, lng: 2.10075, label: "🌲 Pi del Xandri", descripcion: "Ese paseo tan especial" }
         ]
@@ -140,14 +140,14 @@ const MESES = [
         pregunta: "¿Qué comimos el día que fuimos al cine a ver Cómo Entrenar a Tu Dragón?",
         opciones: ["Pizza 🍕", "Hamburguesa 🍔", "Sushi 🍣", "Bocadillo 🥖"],
         correcta: 0,
-        tiempoSegundos: 15
+        tiempoSegundos: 0
       },
       {
         tipo: "quiz",
         pregunta: "¿Con qué te quedaste con ganas ese día... y que todavía me debes? 👀",
         opciones: ["Crepe de Nutella con helado 🥞", "Churros con chocolate", "Tarta de queso", "Donuts"],
         correcta: 0,
-        tiempoSegundos: 15
+        tiempoSegundos: 0
       },
       { tipo: "foto", src: BASE_URL + "47.jpg", caption: "☕ Tomando algo en la plaza de la Mercè, Sant Pere de Ribes" },
       { tipo: "foto", src: BASE_URL + "48.jpg", caption: "🌴 Primeras vacaciones juntos — Mallorca" },
@@ -235,7 +235,7 @@ const MESES = [
           "Cantando en el coche 🎤"
         ],
         correcta: 0,
-        tiempoSegundos: 20
+        tiempoSegundos: 0
       }
     ]
   },

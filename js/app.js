@@ -163,10 +163,27 @@ function renderizarMes(mes) {
   let quizzesCompletados = 0;
   let quizCount = 0;
 
+  // Agrupar fotos consecutivas en galerías
+  let buffer = [];
+
+  function flushBuffer() {
+    if (buffer.length === 0) return;
+    if (buffer.length === 1) {
+      content.appendChild(buffer[0]);
+    } else {
+      const gallery = document.createElement('div');
+      gallery.className = `photo-gallery cols-${Math.min(buffer.length, 3)}`;
+      buffer.forEach(el => gallery.appendChild(el));
+      content.appendChild(gallery);
+    }
+    buffer = [];
+  }
+
   mes.contenido.forEach((bloque, i) => {
     const delay = `${i * 0.08}s`;
 
     if (bloque.tipo === 'texto') {
+      flushBuffer();
       const el = document.createElement('div');
       el.className = 'story-text';
       el.style.animationDelay = delay;
@@ -174,21 +191,29 @@ function renderizarMes(mes) {
       content.appendChild(el);
 
     } else if (bloque.tipo === 'texto-animado') {
+      flushBuffer();
       // ===== TEXTO ANIMADO PALABRA A PALABRA =====
       const el = crearTextoAnimado(bloque.texto, delay);
       content.appendChild(el);
 
-    } else if (bloque.tipo === 'foto') {
+    if (bloque.tipo === 'foto') {
       const el = document.createElement('div');
       el.className = 'photo-block';
       el.style.animationDelay = delay;
+      const imgStyle = bloque.noZoom ? 'object-fit: contain; background:#f9f3e8;' : '';
       el.innerHTML = `
-        <img src="${bloque.src}" alt="${bloque.caption}" onerror="this.parentElement.style.display='none'" />
+        <img src="${bloque.src}" alt="${bloque.caption}" style="${imgStyle}" onerror="this.parentElement.style.display='none'" />
         <div class="photo-caption">${bloque.caption}</div>
       `;
-      content.appendChild(el);
+      buffer.push(el);
+      // Flush si el siguiente NO es foto
+      const siguiente = mes.contenido[i + 1];
+      if (!siguiente || siguiente.tipo !== 'foto' || buffer.length >= 3) {
+        flushBuffer();
+      }
 
     } else if (bloque.tipo === 'video') {
+      flushBuffer();
       const el = document.createElement('div');
       el.className = 'video-block';
       el.style.animationDelay = delay;
@@ -201,11 +226,13 @@ function renderizarMes(mes) {
       content.appendChild(el);
 
     } else if (bloque.tipo === 'mapa') {
+      flushBuffer();
       // ===== MAPA MULTI-PIN =====
       const el = crearMapaMultiPin(bloque);
       content.appendChild(el);
 
     } else if (bloque.tipo === 'carta') {
+      flushBuffer();
       const el = document.createElement('div');
       el.className = 'letter-trigger';
       el.style.animationDelay = delay;
@@ -218,6 +245,7 @@ function renderizarMes(mes) {
       content.appendChild(el);
 
     } else if (bloque.tipo === 'quiz') {
+      flushBuffer();
       quizCount++;
       const quizEl = crearQuiz(bloque, quizCount, () => {
         quizzesCompletados++;
@@ -373,7 +401,8 @@ function crearQuiz(bloque, numero, onCompletado) {
   const div = document.createElement('div');
   div.className = 'quiz-block';
 
-  const tiempoTotal = bloque.tiempoSegundos || 15;
+  const tiempoTotal = bloque.tiempoSegundos || 0;
+  const conTiempo = tiempoTotal > 0;
   let tiempoRestante = tiempoTotal;
   let respondido = false;
 
@@ -391,10 +420,11 @@ function crearQuiz(bloque, numero, onCompletado) {
 
   div.innerHTML = `
     ${mediaHtml}
+    ${conTiempo ? `
     <div class="quiz-timer">
       <div class="timer-bar-bg"><div class="timer-bar" id="timer-bar-${numero}" style="width:100%"></div></div>
       <div class="timer-count" id="timer-count-${numero}">${tiempoTotal}</div>
-    </div>
+    </div>` : ''}
     <div class="quiz-question">${bloque.pregunta}</div>
     <div class="quiz-options" id="quiz-options-${numero}">
       ${bloque.opciones.map((op, i) => `
@@ -406,31 +436,34 @@ function crearQuiz(bloque, numero, onCompletado) {
     <div class="quiz-result" id="quiz-result-${numero}"></div>
   `;
 
-  const tickSfx = document.getElementById('sfx-tick');
-  const ringSfx = document.getElementById('sfx-ring');
+  // Solo iniciar timer si hay tiempo definido
+  if (conTiempo) {
+    const tickSfx = document.getElementById('sfx-tick');
+    const ringSfx = document.getElementById('sfx-ring');
 
-  quizTimerInterval = setInterval(() => {
-    if (respondido) { clearInterval(quizTimerInterval); return; }
-    tiempoRestante--;
-    const bar   = document.getElementById(`timer-bar-${numero}`);
-    const count = document.getElementById(`timer-count-${numero}`);
-    if (bar)   bar.style.width = `${(tiempoRestante / tiempoTotal) * 100}%`;
-    if (count) {
-      count.textContent = tiempoRestante;
-      if (tiempoRestante <= 4) {
-        count.classList.add('urgent');
-        if (tickSfx && tickSfx.src) { tickSfx.currentTime = 0; tickSfx.play().catch(() => {}); }
+    quizTimerInterval = setInterval(() => {
+      if (respondido) { clearInterval(quizTimerInterval); return; }
+      tiempoRestante--;
+      const bar   = document.getElementById(`timer-bar-${numero}`);
+      const count = document.getElementById(`timer-count-${numero}`);
+      if (bar)   bar.style.width = `${(tiempoRestante / tiempoTotal) * 100}%`;
+      if (count) {
+        count.textContent = tiempoRestante;
+        if (tiempoRestante <= 4) {
+          count.classList.add('urgent');
+          if (tickSfx && tickSfx.src) { tickSfx.currentTime = 0; tickSfx.play().catch(() => {}); }
+        }
       }
-    }
-    if (tiempoRestante <= 0) {
-      clearInterval(quizTimerInterval);
-      if (!respondido) {
-        respondido = true;
-        if (ringSfx && ringSfx.src) { ringSfx.currentTime = 0; ringSfx.play().catch(() => {}); }
-        tiempoAgotado(numero, bloque.correcta, bloque.opciones, onCompletado);
+      if (tiempoRestante <= 0) {
+        clearInterval(quizTimerInterval);
+        if (!respondido) {
+          respondido = true;
+          if (ringSfx && ringSfx.src) { ringSfx.currentTime = 0; ringSfx.play().catch(() => {}); }
+          tiempoAgotado(numero, bloque.correcta, bloque.opciones, onCompletado);
+        }
       }
-    }
-  }, 1000);
+    }, 1000);
+  }
 
   div._onCompletado = onCompletado;
   div._respondido = respondido;

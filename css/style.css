@@ -845,3 +845,33 @@ body {
   color: var(--text-warm);
   margin-top: 0.1rem;
 }
+
+/* ======= GALERÍA DE FOTOS (PC) ======= */
+.photo-gallery {
+  display: grid;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.photo-gallery.cols-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.photo-gallery.cols-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.photo-gallery .photo-block {
+  margin-bottom: 0;
+}
+
+.photo-gallery .photo-block img {
+  max-height: 280px;
+}
+
+@media (max-width: 600px) {
+  .photo-gallery.cols-2,
+  .photo-gallery.cols-3 {
+    grid-template-columns: 1fr;
+  }
+}
