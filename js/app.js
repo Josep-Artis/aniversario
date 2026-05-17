@@ -1,30 +1,30 @@
 // ============================================
 //  APP.JS - Lógica principal del Wrap Aniversario
-//  v2 - Con vídeo local, mapa Google Maps, carta animada y Spotify
+//  v3 - Con texto animado, mapa multi-pin, vídeo en quiz
 // ============================================
- 
+
 let estadoMeses = [];
 let mesActual = null;
 let quizTimerInterval = null;
+let textoAnimadoInterval = null;
 let titleClickCount = 0;
-let letraActual = null;
- 
+
 // ---- Inicialización ----
 document.addEventListener('DOMContentLoaded', () => {
   cargarEstado();
   iniciarIntro();
   iniciarSpotify();
- 
+
   document.getElementById('password-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') checkPassword();
   });
- 
+
   document.getElementById('main-title').addEventListener('click', () => {
     titleClickCount++;
     if (titleClickCount >= 5) { unlockAll(); titleClickCount = 0; }
   });
 });
- 
+
 // ---- ESTADO ----
 function cargarEstado() {
   const guardado = localStorage.getItem('wrap-aniversario-estado');
@@ -39,12 +39,12 @@ function cargarEstado() {
     estadoMeses = MESES.map(m => ({ id: m.id, desbloqueado: m.desbloqueado, completado: m.completado }));
   }
 }
- 
+
 function guardarEstado() {
   estadoMeses = MESES.map(m => ({ id: m.id, desbloqueado: m.desbloqueado, completado: m.completado }));
   localStorage.setItem('wrap-aniversario-estado', JSON.stringify(estadoMeses));
 }
- 
+
 // ---- INTRO ----
 function iniciarIntro() {
   const houseImg = document.getElementById('house-img');
@@ -54,7 +54,7 @@ function iniciarIntro() {
   };
   setTimeout(() => mostrarPantallaContraseña(), 5000);
 }
- 
+
 // ---- CONTRASEÑA ----
 function mostrarPantallaContraseña() {
   const intro = document.getElementById('intro-screen');
@@ -65,12 +65,12 @@ function mostrarPantallaContraseña() {
     document.getElementById('password-input').focus();
   }, 1000);
 }
- 
+
 function checkPassword() {
   const input = document.getElementById('password-input').value.trim().toLowerCase();
   const error = document.getElementById('password-error');
   const hint  = document.getElementById('password-hint');
- 
+
   if (CONTRASEÑAS_VALIDAS.includes(input)) {
     error.classList.add('hidden');
     hint.classList.add('hidden');
@@ -85,18 +85,18 @@ function checkPassword() {
     document.getElementById('password-input').focus();
   }
 }
- 
+
 function toggleHint() {
   document.getElementById('password-hint').classList.toggle('hidden');
 }
- 
+
 // ---- PANTALLA PRINCIPAL ----
 function mostrarPantallaMain() {
   document.getElementById('main-screen').classList.remove('hidden');
   document.getElementById('spotify-player').classList.remove('hidden');
   renderizarGrid();
 }
- 
+
 function renderizarGrid() {
   const grid = document.getElementById('months-grid');
   grid.innerHTML = '';
@@ -122,7 +122,7 @@ function renderizarGrid() {
     grid.appendChild(card);
   });
 }
- 
+
 function unlockAll() {
   MESES.forEach(m => m.desbloqueado = true);
   guardarEstado();
@@ -132,7 +132,7 @@ function unlockAll() {
   hint.style.transition = 'opacity 0.5s';
   setTimeout(() => hint.style.opacity = '0', 3000);
 }
- 
+
 // ---- MES ----
 function abrirMes(mes) {
   mesActual = mes;
@@ -140,39 +140,44 @@ function abrirMes(mes) {
   document.getElementById('month-screen').classList.remove('hidden');
   renderizarMes(mes);
 }
- 
+
 function goBack() {
   if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
+  if (textoAnimadoInterval) { clearInterval(textoAnimadoInterval); textoAnimadoInterval = null; }
   document.getElementById('month-screen').classList.add('hidden');
   document.getElementById('main-screen').classList.remove('hidden');
   document.getElementById('month-screen').scrollTop = 0;
-  // Pausar vídeos al volver
   document.querySelectorAll('#month-content video').forEach(v => v.pause());
 }
- 
+
 function renderizarMes(mes) {
   const content = document.getElementById('month-content');
   content.innerHTML = '';
- 
+
   const header = document.createElement('div');
   header.className = 'month-header';
   header.innerHTML = `<h2>${mes.emoji} ${mes.nombre} ${mes.año}</h2><p>${mes.descripcion}</p>`;
   content.appendChild(header);
- 
+
   let totalQuizzes = mes.contenido.filter(c => c.tipo === 'quiz').length;
   let quizzesCompletados = 0;
   let quizCount = 0;
- 
+
   mes.contenido.forEach((bloque, i) => {
-    const delay = `${i * 0.1}s`;
- 
+    const delay = `${i * 0.08}s`;
+
     if (bloque.tipo === 'texto') {
       const el = document.createElement('div');
       el.className = 'story-text';
       el.style.animationDelay = delay;
       el.textContent = bloque.texto;
       content.appendChild(el);
- 
+
+    } else if (bloque.tipo === 'texto-animado') {
+      // ===== TEXTO ANIMADO PALABRA A PALABRA =====
+      const el = crearTextoAnimado(bloque.texto, delay);
+      content.appendChild(el);
+
     } else if (bloque.tipo === 'foto') {
       const el = document.createElement('div');
       el.className = 'photo-block';
@@ -182,44 +187,25 @@ function renderizarMes(mes) {
         <div class="photo-caption">${bloque.caption}</div>
       `;
       content.appendChild(el);
- 
+
     } else if (bloque.tipo === 'video') {
-      // ===== NUEVO: VÍDEO LOCAL =====
       const el = document.createElement('div');
       el.className = 'video-block';
       el.style.animationDelay = delay;
       el.innerHTML = `
         <video controls playsinline preload="metadata">
           <source src="${bloque.src}" type="${bloque.formato || 'video/mp4'}" />
-          Tu navegador no soporta vídeo HTML5.
         </video>
         <div class="video-caption">${bloque.caption || ''}</div>
       `;
       content.appendChild(el);
- 
+
     } else if (bloque.tipo === 'mapa') {
-      // ===== NUEVO: MAPA GOOGLE MAPS =====
-      const el = document.createElement('div');
-      el.className = 'map-block';
-      el.style.animationDelay = delay;
-      // Si pasan embedUrl directo lo usamos, si no construimos uno básico con q=
-      const mapSrc = bloque.embedUrl ||
-        `https://maps.google.com/maps?q=${encodeURIComponent(bloque.lugar)}&output=embed&z=${bloque.zoom || 15}`;
-      el.innerHTML = `
-        <iframe
-          src="${mapSrc}"
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-          title="${bloque.caption || bloque.lugar}">
-        </iframe>
-        <div class="map-caption">
-          <span>📍</span> ${bloque.caption || bloque.lugar}
-        </div>
-      `;
+      // ===== MAPA MULTI-PIN =====
+      const el = crearMapaMultiPin(bloque);
       content.appendChild(el);
- 
+
     } else if (bloque.tipo === 'carta') {
-      // ===== NUEVO: CARTA ANIMADA =====
       const el = document.createElement('div');
       el.className = 'letter-trigger';
       el.style.animationDelay = delay;
@@ -230,39 +216,144 @@ function renderizarMes(mes) {
       `;
       el.addEventListener('click', () => abrirCarta(bloque.texto));
       content.appendChild(el);
- 
+
     } else if (bloque.tipo === 'quiz') {
       quizCount++;
       const quizEl = crearQuiz(bloque, quizCount, () => {
         quizzesCompletados++;
-        if (quizzesCompletados >= totalQuizzes || totalQuizzes === 0) {
+        if (quizzesCompletados >= totalQuizzes) {
           setTimeout(() => mostrarBotonSiguienteMes(mes, content), 600);
         }
       });
       content.appendChild(quizEl);
     }
   });
- 
+
   if (totalQuizzes === 0) {
     setTimeout(() => mostrarBotonSiguienteMes(mes, content), 500);
   }
 }
- 
+
+// ---- TEXTO ANIMADO ----
+function crearTextoAnimado(texto, delay) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'story-text texto-animado-wrapper';
+  wrapper.style.animationDelay = delay;
+  wrapper.style.minHeight = '100px';
+
+  const display = document.createElement('div');
+  display.className = 'texto-animado-display';
+  wrapper.appendChild(display);
+
+  const btn = document.createElement('button');
+  btn.className = 'texto-animado-btn';
+  btn.textContent = '▶ Leer carta';
+  btn.onclick = () => iniciarTextoAnimado(texto, display, btn);
+  wrapper.appendChild(btn);
+
+  return wrapper;
+}
+
+function iniciarTextoAnimado(texto, display, btn) {
+  btn.style.display = 'none';
+  display.innerHTML = '';
+
+  // Separar por párrafos y luego por palabras
+  const parrafos = texto.split('\n\n');
+  let palabrasTotales = [];
+
+  parrafos.forEach((parrafo, pi) => {
+    const palabras = parrafo.trim().split(' ');
+    palabras.forEach((p, wi) => {
+      palabrasTotales.push({ texto: p, esFinParrafo: wi === palabras.length - 1 && pi < parrafos.length - 1 });
+    });
+  });
+
+  let i = 0;
+  let parrafoActual = document.createElement('p');
+  parrafoActual.style.marginBottom = '1rem';
+  display.appendChild(parrafoActual);
+
+  textoAnimadoInterval = setInterval(() => {
+    if (i >= palabrasTotales.length) {
+      clearInterval(textoAnimadoInterval);
+      textoAnimadoInterval = null;
+      return;
+    }
+
+    const item = palabrasTotales[i];
+    const span = document.createElement('span');
+    span.textContent = item.texto + ' ';
+    span.className = 'palabra-animada';
+    span.style.animationDelay = '0s';
+    parrafoActual.appendChild(span);
+
+    if (item.esFinParrafo) {
+      parrafoActual = document.createElement('p');
+      parrafoActual.style.marginBottom = '1rem';
+      display.appendChild(parrafoActual);
+    }
+
+    // Scroll suave al último elemento
+    display.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    i++;
+  }, 120); // Una palabra cada 120ms
+}
+
+// ---- MAPA MULTI-PIN ----
+function crearMapaMultiPin(bloque) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'map-block mapa-multi';
+
+  // Calcular centro del mapa
+  const lats = bloque.pines.map(p => p.lat);
+  const lngs = bloque.pines.map(p => p.lng);
+  const centerLat = (Math.min(...lats) + Math.max(...lats)) / 2;
+  const centerLng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
+
+  // Construir URL de Google Maps con múltiples marcadores
+  // Usamos el modo embed con búsqueda del centro + markers como waypoints
+  const markersParam = bloque.pines.map(p => `${p.lat},${p.lng}`).join('|');
+  
+  // Google Maps embed con múltiples pins usando el modo directions o search
+  // La forma más fiable: iframe con mapa centrado + lista de sitios debajo
+  const mapSrc = `https://maps.google.com/maps?q=${centerLat},${centerLng}&z=14&output=embed`;
+
+  wrapper.innerHTML = `
+    <div class="mapa-titulo">${bloque.titulo || 'Nuestros sitios especiales 📍'}</div>
+    <iframe
+      src="${mapSrc}"
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+      title="${bloque.titulo || 'Mapa'}">
+    </iframe>
+    <div class="mapa-pines-lista">
+      ${bloque.pines.map(p => `
+        <a class="mapa-pin-item" href="https://maps.google.com/?q=${p.lat},${p.lng}" target="_blank">
+          <span class="mapa-pin-label">${p.label}</span>
+          <span class="mapa-pin-desc">${p.descripcion || ''}</span>
+        </a>
+      `).join('')}
+    </div>
+  `;
+
+  return wrapper;
+}
+
 // ---- CARTA ----
 function abrirCarta(texto) {
-  letraActual = texto;
   const modal = document.getElementById('letter-modal');
   const envelope = document.getElementById('envelope');
   const flap = document.getElementById('envelope-flap');
   const paper = document.getElementById('letter-paper');
   const textContent = document.getElementById('letter-text-content');
- 
+
   textContent.textContent = texto;
   modal.classList.remove('hidden');
   paper.classList.add('hidden');
+  envelope.style.display = 'block';
   flap.classList.remove('open');
- 
-  // Al cabo de 0.8s, abrir el sobre → mostrar carta
+
   setTimeout(() => {
     flap.classList.add('open');
     setTimeout(() => {
@@ -271,25 +362,35 @@ function abrirCarta(texto) {
     }, 700);
   }, 800);
 }
- 
+
 function cerrarCarta() {
-  const modal = document.getElementById('letter-modal');
-  const envelope = document.getElementById('envelope');
-  modal.classList.add('hidden');
-  envelope.style.display = 'block';
+  document.getElementById('letter-modal').classList.add('hidden');
+  document.getElementById('envelope').style.display = 'block';
 }
- 
+
 // ---- QUIZ ----
 function crearQuiz(bloque, numero, onCompletado) {
   const div = document.createElement('div');
   div.className = 'quiz-block';
- 
+
   const tiempoTotal = bloque.tiempoSegundos || 15;
   let tiempoRestante = tiempoTotal;
   let respondido = false;
- 
+
+  // Si el quiz tiene vídeo, lo añadimos arriba
+  let mediaHtml = '';
+  if (bloque.video) {
+    mediaHtml = `
+      <video class="quiz-photo" controls playsinline preload="metadata" style="max-height:200px; width:100%; border-radius:14px; margin-bottom:1rem;">
+        <source src="${bloque.video}" type="video/mp4" />
+      </video>
+    `;
+  } else if (bloque.foto) {
+    mediaHtml = `<img class="quiz-photo" src="${bloque.foto}" alt="Quiz" onerror="this.style.display='none'" />`;
+  }
+
   div.innerHTML = `
-    ${bloque.foto ? `<img class="quiz-photo" src="${bloque.foto}" alt="Quiz" onerror="this.style.display='none'" />` : ''}
+    ${mediaHtml}
     <div class="quiz-timer">
       <div class="timer-bar-bg"><div class="timer-bar" id="timer-bar-${numero}" style="width:100%"></div></div>
       <div class="timer-count" id="timer-count-${numero}">${tiempoTotal}</div>
@@ -304,10 +405,10 @@ function crearQuiz(bloque, numero, onCompletado) {
     </div>
     <div class="quiz-result" id="quiz-result-${numero}"></div>
   `;
- 
+
   const tickSfx = document.getElementById('sfx-tick');
   const ringSfx = document.getElementById('sfx-ring');
- 
+
   quizTimerInterval = setInterval(() => {
     if (respondido) { clearInterval(quizTimerInterval); return; }
     tiempoRestante--;
@@ -330,11 +431,12 @@ function crearQuiz(bloque, numero, onCompletado) {
       }
     }
   }, 1000);
- 
+
   div._onCompletado = onCompletado;
+  div._respondido = respondido;
   return div;
 }
- 
+
 function responderQuiz(numero, seleccion, correcta, btnEl) {
   const options = document.querySelectorAll(`#quiz-options-${numero} .quiz-option`);
   const result  = document.getElementById(`quiz-result-${numero}`);
@@ -342,7 +444,7 @@ function responderQuiz(numero, seleccion, correcta, btnEl) {
   options[correcta].classList.add('correct');
   if (seleccion !== correcta) btnEl.classList.add('wrong');
   if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
- 
+
   const correcto = seleccion === correcta;
   if (correcto) {
     const sfx = document.getElementById('sfx-correct');
@@ -355,14 +457,14 @@ function responderQuiz(numero, seleccion, correcta, btnEl) {
     result.className = 'quiz-result wrong-result';
     result.textContent = `❌ ¡Casi! La respuesta era: "${document.getElementById(`option-${numero}-${correcta}`).textContent.trim()}"`;
   }
- 
+
   setTimeout(() => {
     document.querySelectorAll('.quiz-block').forEach(block => {
       if (block._onCompletado) { block._onCompletado(); block._onCompletado = null; }
     });
   }, 1500);
 }
- 
+
 function tiempoAgotado(numero, correcta, opciones, onCompletado) {
   const options = document.querySelectorAll(`#quiz-options-${numero} .quiz-option`);
   const result  = document.getElementById(`quiz-result-${numero}`);
@@ -372,17 +474,17 @@ function tiempoAgotado(numero, correcta, opciones, onCompletado) {
   result.textContent = `⏰ ¡Se acabó el tiempo! La respuesta era: "${opciones[correcta]}"`;
   setTimeout(() => { if (onCompletado) onCompletado(); }, 1500);
 }
- 
+
 // ---- BOTÓN SIGUIENTE MES ----
 function mostrarBotonSiguienteMes(mes, content) {
   mes.completado = true;
   const idx = MESES.findIndex(m => m.id === mes.id);
   if (idx !== -1 && idx < MESES.length - 1) MESES[idx + 1].desbloqueado = true;
   guardarEstado();
- 
+
   const esUltimo = idx === MESES.length - 1;
   const btn = document.createElement('div');
- 
+
   if (esUltimo) {
     btn.innerHTML = `
       <div style="text-align:center; padding:2rem 1rem;">
@@ -405,31 +507,27 @@ function mostrarBotonSiguienteMes(mes, content) {
       </button>
     `;
   }
- 
+
   content.appendChild(btn);
   setTimeout(() => btn.scrollIntoView({ behavior: 'smooth', block: 'end' }), 200);
 }
- 
+
 // ---- SPOTIFY ----
 function iniciarSpotify() {
-  if (!SPOTIFY_URL) return;
- 
-  // Convertir URL de playlist/álbum a embed URL si es necesario
+  if (!SPOTIFY_URL || SPOTIFY_URL.includes('PON_AQUI')) return;
+
   let embedUrl = SPOTIFY_URL;
   if (SPOTIFY_URL.includes('open.spotify.com') && !SPOTIFY_URL.includes('/embed/')) {
-    // https://open.spotify.com/playlist/ID → https://open.spotify.com/embed/playlist/ID
     embedUrl = SPOTIFY_URL.replace('open.spotify.com/', 'open.spotify.com/embed/');
-    // Limpiar parámetros extra
     embedUrl = embedUrl.split('?')[0];
   }
- 
+
   const iframe = document.getElementById('spotify-iframe');
-  iframe.src = embedUrl + '?utm_source=generator&theme=0';
+  if (iframe) iframe.src = embedUrl + '?utm_source=generator&theme=0';
 }
- 
+
 function toggleSpotify() {
   const panel = document.getElementById('spotify-panel');
   panel.classList.toggle('open');
   document.getElementById('spotify-icon').textContent = panel.classList.contains('open') ? '✕' : '🎵';
 }
- 
