@@ -43,7 +43,7 @@ const MESES = [
         pregunta: "¿Qué pasó la mañana que íbamos a quedar por primera vez en Sant Cugat para desayunar?",
         opciones: ["Te mordió el perro de mi madre 🐶", "Perdí el tren", "Me quedé dormido", "Se me olvidó avisarte"],
         correcta: 0,
-        tiempoSegundos: 0
+        tiempoSegundos: 60
       },
       { tipo: "foto", src: BASE_URL + "15.jpg", caption: "😬 Qué nervios... después de lo de tus padres" },
       { tipo: "foto", src: BASE_URL + "18.jpg", caption: "🍹 Tomando algo en el Botanic GastroLounge de Tossa" },
