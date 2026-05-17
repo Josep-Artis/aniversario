@@ -192,11 +192,10 @@ function renderizarMes(mes) {
 
     } else if (bloque.tipo === 'texto-animado') {
       flushBuffer();
-      // ===== TEXTO ANIMADO PALABRA A PALABRA =====
       const el = crearTextoAnimado(bloque.texto, delay);
       content.appendChild(el);
 
-    if (bloque.tipo === 'foto') {
+    } else if (bloque.tipo === 'foto') {
       const el = document.createElement('div');
       el.className = 'photo-block';
       el.style.animationDelay = delay;
@@ -465,8 +464,8 @@ function crearQuiz(bloque, numero, onCompletado) {
     }, 1000);
   }
 
+  div.dataset.quizNumero = numero;
   div._onCompletado = onCompletado;
-  div._respondido = respondido;
   return div;
 }
 
@@ -491,10 +490,13 @@ function responderQuiz(numero, seleccion, correcta, btnEl) {
     result.textContent = `❌ ¡Casi! La respuesta era: "${document.getElementById(`option-${numero}-${correcta}`).textContent.trim()}"`;
   }
 
+  // Llamar el callback del quiz actual
   setTimeout(() => {
-    document.querySelectorAll('.quiz-block').forEach(block => {
-      if (block._onCompletado) { block._onCompletado(); block._onCompletado = null; }
-    });
+    const thisBlock = document.querySelector(`.quiz-block[data-quiz-numero="${numero}"]`);
+    if (thisBlock && thisBlock._onCompletado) {
+      thisBlock._onCompletado();
+      thisBlock._onCompletado = null;
+    }
   }, 1500);
 }
 
