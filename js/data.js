@@ -391,11 +391,11 @@ const MESES = [
     contenido: [
       {
         tipo: "texto",
-        texto: "Semana Santa y por fin tiempo para respirar juntos. Un picnic en Montjuïc escuchando música con Barcelona a los pies, el jardín botánico, el sol dando en la cara... y al día siguiente, un salto al pasado en la exposición de Pompeya en realidad virtual. De la calma absoluta al Vesubio en erupción. Así somos nosotros. 🌋"
+        texto: "Celebramos mi primer cumple juntos y llego Semana Santa y por fin tiempo para respirar juntos. Un picnic en Montjuïc escuchando música con Barcelona a los pies, el jardín botánico, el sol dando en la cara... y al día siguiente, un salto al pasado en la exposición de Pompeya en realidad virtual. De la calma absoluta al Vesubio en erupción. Así somos nosotros. 🌋"
       },
-      { tipo: "foto", src: BASE_URL + "carla6.jpg", caption: "😂 Tú tan bella y yo.. pues yo jajaja" },
-      { tipo: "foto", src: BASE_URL + "carla7.jpg", caption: "🍣 Sushiii del bueno" },
-      { tipo: "foto", src: BASE_URL + "carla8.jpg", caption: "😍 Tú siempre tan guapa amor 🥹" },
+      { tipo: "foto", src: BASE_URL + "carla6.jpg", caption: "😍 Tú siempre tan guapa amor 🥹" },
+      { tipo: "foto", src: BASE_URL + "carla7.jpg", caption: "😂Tú tan bella y yo.. pues yo jajaja" },
+      { tipo: "foto", src: BASE_URL + "carla8.jpg", caption: "🍣 Tú siempre tan guapa amor 🥹" },
       { tipo: "foto", src: BASE_URL + "carla4.jpg", caption: "🌸 Juntitos después del picnic en Montjuïc" },
       { tipo: "foto", src: BASE_URL + "carla5.jpg", caption: "🥽 ¿Preparada para el VR?" },
       { tipo: "foto", src: BASE_URL + "129.jpg", caption: "🌿 Picnic en Montjuïc, Barcelona al sol ☀️" },
@@ -446,7 +446,7 @@ const MESES = [
     contenido: [
       {
         tipo: "texto",
-        texto: "De dos extraños que se cruzaron por casualidades de la vida, a serlo todo el uno para el otro. Hay una foto tuya que defendería con mi vida. Puede que seas consciente de cómo me miras — o puede que no del todo. Pero esa mirada tuya que dice 'estoy aquí, tranquilo, confío en ti, estoy orgullosa de ti'... me convierte en Super Saiyan full power. Por muy reventado o cansado que esté, nadie ni nada puede conmigo cuando me miras así. Gracias por este año, amor. Gracias por ser tú. 💛🎈"
+  texto: "De dos extraños que se cruzaron por casualidades de la vida, a serlo todo el uno para el otro. Hay una foto tuya que defendería con mi vida. Puede que seas consciente de cómo me miras — o puede que no del todo. Pero esa mirada tuya que dice 'estoy aquí, tranquilo, confío en ti, estoy orgullosa de ti', me convierte en Super Saiyan Full Power. Por muy exhausto,cansado o desanimado que esté, nada ni nadie puede conmigo cuando me miras así en definitiva cuando estas a mi lado. Gracias por este año, amor, por enseñarme qué es el amor verdadero, el poder de las conversaciones que tenemos, de las metas todo va mas alla si estamos juntos Tu&Yo. Gracias por ser tú. 💛🎈"
       },
       { tipo: "foto", src: BASE_URL + "138.jpeg", caption: "💛 Esa mirada que me lo da todo" },
       { tipo: "foto", src: BASE_URL + "139.jpeg", caption: "🎈 Un año juntos" },
