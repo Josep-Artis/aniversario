@@ -355,7 +355,7 @@ function crearQuiz(bloque) {
 
   let mediaHtml = '';
   if (bloque.video) {
-    mediaHtml = `<video class="quiz-photo" controls playsinline preload="metadata">
+    mediaHtml = `<video class="quiz-photo" controls playsinline preload="metadata" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=">
       <source src="${bloque.video}" type="video/mp4" /></video>`;
   } else if (bloque.foto) {
     mediaHtml = `<img class="quiz-photo" src="${bloque.foto}" alt="Quiz" onerror="this.style.display='none'" />`;
