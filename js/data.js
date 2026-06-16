@@ -446,7 +446,7 @@ const MESES = [
     contenido: [
       {
         tipo: "texto",
-  texto: "De dos extraños que se cruzaron por casualidades de la vida, a serlo todo el uno para el otro. Hay una foto tuya que defendería con mi vida. Puede que seas consciente de cómo me miras — o puede que no del todo. Pero esa mirada tuya que dice 'estoy aquí, tranquilo, confío en ti, estoy orgullosa de ti', me convierte en Super Saiyan Full Power. Por muy exhausto,cansado o desanimado que esté, nada ni nadie puede conmigo cuando me miras así en definitiva cuando estas a mi lado. Gracias por este año, amor, por enseñarme qué es el amor verdadero, el poder de las conversaciones que tenemos, de las metas todo va mas alla si estamos juntos Tu&Yo. Gracias por ser tú. 💛🎈"
+  texto: "De dos extraños que se cruzaron por casualidades de la vida, a serlo todo el uno para el otro. Hay una foto tuya que defendería con mi vida. Puede que seas consciente de cómo me miras — o puede que no del todo. Pero esa mirada tuya que dice 'estoy aquí, tranquilo, confío en ti, estoy orgullosa de ti', me convierte en Super Saiyan Full Power. Por muy exhausto,cansado o desanimado que esté, nada ni nadie puede conmigo cuando me miras así en definitiva cuando estas a mi lado. Gracias por este año, amor, por enseñarme qué es el amor verdadero, el poder de las conversaciones que tenemos, de las metas todo va mas alla si estamos juntos Tu&Yo. Gracias por ser tú,  Te amo💛🎈"
       },
       { tipo: "foto", src: BASE_URL + "138.jpeg", caption: "💛 Esa mirada que me lo da todo" },
       { tipo: "foto", src: BASE_URL + "139.jpeg", caption: "🎈 Un año juntos" },
