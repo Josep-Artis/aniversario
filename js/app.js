@@ -1,10 +1,8 @@
 // ============================================
-//  APP.JS v4 - Reescritura limpia
+//  APP.JS v5 - Botón siempre visible, lightbox, sin timers
 // ============================================
 
-let estadoMeses = [];
 let mesActual = null;
-let quizTimerInterval = null;
 let textoAnimadoInterval = null;
 let titleClickCount = 0;
 
@@ -22,6 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
     titleClickCount++;
     if (titleClickCount >= 5) { unlockAll(); titleClickCount = 0; }
   });
+
+  // Lightbox click fuera cierra
+  document.getElementById('lightbox').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('lightbox')) cerrarLightbox();
+  });
 });
 
 // ---- ESTADO ----
@@ -34,12 +37,11 @@ function cargarEstado() {
       if (s) { MESES[i].desbloqueado = s.desbloqueado; MESES[i].completado = s.completado; }
     });
   }
-  estadoMeses = MESES.map(m => ({ id: m.id, desbloqueado: m.desbloqueado, completado: m.completado }));
 }
 
 function guardarEstado() {
-  estadoMeses = MESES.map(m => ({ id: m.id, desbloqueado: m.desbloqueado, completado: m.completado }));
-  localStorage.setItem('wrap-aniversario-estado', JSON.stringify(estadoMeses));
+  const estado = MESES.map(m => ({ id: m.id, desbloqueado: m.desbloqueado, completado: m.completado }));
+  localStorage.setItem('wrap-aniversario-estado', JSON.stringify(estado));
 }
 
 // ---- INTRO ----
@@ -134,12 +136,12 @@ function abrirMes(mes) {
 }
 
 function goBack() {
-  if (quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
   if (textoAnimadoInterval) { clearInterval(textoAnimadoInterval); textoAnimadoInterval = null; }
   document.getElementById('month-screen').classList.add('hidden');
   document.getElementById('main-screen').classList.remove('hidden');
   document.getElementById('month-screen').scrollTop = 0;
   document.querySelectorAll('#month-content video').forEach(v => v.pause());
+  renderizarGrid();
 }
 
 function renderizarMes(mes) {
@@ -152,12 +154,6 @@ function renderizarMes(mes) {
   header.innerHTML = `<h2>${mes.emoji} ${mes.nombre} ${mes.año}</h2><p>${mes.descripcion}</p>`;
   content.appendChild(header);
 
-  // Contar quizzes totales
-  const totalQuizzes = mes.contenido.filter(c => c.tipo === 'quiz').length;
-  let quizzesCompletados = 0;
-  let quizCount = 0;
-
-  // Buffer para agrupar fotos en galería
   let fotoBuffer = [];
 
   function flushFotos() {
@@ -173,30 +169,29 @@ function renderizarMes(mes) {
     fotoBuffer = [];
   }
 
-  function onQuizCompletado() {
-    quizzesCompletados++;
-    if (quizzesCompletados >= totalQuizzes) {
-      setTimeout(() => mostrarBotonSiguienteMes(mes, content), 800);
-    }
-  }
-
   mes.contenido.forEach((bloque, i) => {
 
     if (bloque.tipo === 'foto') {
       const el = document.createElement('div');
       el.className = 'photo-block';
       const imgStyle = bloque.noZoom ? 'object-fit:contain;background:#f9f3e8;' : '';
-      el.innerHTML = `
-        <img src="${bloque.src}" alt="${bloque.caption}" style="${imgStyle}" onerror="this.parentElement.style.display='none'" />
-        <div class="photo-caption">${bloque.caption}</div>
-      `;
+      const img = document.createElement('img');
+      img.src = bloque.src;
+      img.alt = bloque.caption;
+      img.style.cssText = imgStyle;
+      img.onerror = () => el.style.display = 'none';
+      img.addEventListener('click', () => abrirLightbox(bloque.src, bloque.caption));
+      const caption = document.createElement('div');
+      caption.className = 'photo-caption';
+      caption.textContent = bloque.caption;
+      el.appendChild(img);
+      el.appendChild(caption);
       fotoBuffer.push(el);
       const sig = mes.contenido[i + 1];
       if (!sig || sig.tipo !== 'foto' || fotoBuffer.length >= 3) flushFotos();
       return;
     }
 
-    // Si llegamos aquí no es foto, vaciamos buffer
     flushFotos();
 
     if (bloque.tipo === 'texto') {
@@ -234,18 +229,27 @@ function renderizarMes(mes) {
       content.appendChild(el);
 
     } else if (bloque.tipo === 'quiz') {
-      quizCount++;
-      content.appendChild(crearQuiz(bloque, quizCount, onQuizCompletado));
+      content.appendChild(crearQuiz(bloque));
     }
   });
 
-  // Vaciar buffer al final por si acaba en fotos
   flushFotos();
 
-  // Si no hay quizzes mostrar botón directamente
-  if (totalQuizzes === 0) {
-    setTimeout(() => mostrarBotonSiguienteMes(mes, content), 500);
-  }
+  // Botón siguiente mes — siempre al final, independiente del quiz
+  mostrarBotonSiguienteMes(mes, content);
+}
+
+// ---- LIGHTBOX ----
+function abrirLightbox(src, caption) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox-caption').textContent = caption || '';
+  lb.classList.remove('hidden');
+}
+
+function cerrarLightbox() {
+  document.getElementById('lightbox').classList.add('hidden');
+  document.getElementById('lightbox-img').src = '';
 }
 
 // ---- TEXTO ANIMADO ----
@@ -267,18 +271,18 @@ function crearTextoAnimado(texto) {
     const parrafos = texto.split('\n\n');
     let palabras = [];
     parrafos.forEach((p, pi) => {
-      p.trim().split(' ').forEach((w, wi, arr) => {
+      p.trim().split(' ').forEach((w, wi) => {
         palabras.push({ texto: w, newParagraph: wi === 0 && pi > 0 });
       });
     });
 
     let parrafoActual = document.createElement('p');
     display.appendChild(parrafoActual);
-    let i = 0;
+    let idx = 0;
 
     textoAnimadoInterval = setInterval(() => {
-      if (i >= palabras.length) { clearInterval(textoAnimadoInterval); return; }
-      const item = palabras[i];
+      if (idx >= palabras.length) { clearInterval(textoAnimadoInterval); return; }
+      const item = palabras[idx];
       if (item.newParagraph) {
         parrafoActual = document.createElement('p');
         display.appendChild(parrafoActual);
@@ -287,7 +291,7 @@ function crearTextoAnimado(texto) {
       span.className = 'palabra-animada';
       span.textContent = item.texto + ' ';
       parrafoActual.appendChild(span);
-      i++;
+      idx++;
     }, 110);
   };
   wrapper.appendChild(btn);
@@ -344,15 +348,10 @@ function cerrarCarta() {
   document.getElementById('envelope').style.display = 'block';
 }
 
-// ---- QUIZ ----
-function crearQuiz(bloque, numero, onCompletado) {
+// ---- QUIZ (sin timer) ----
+function crearQuiz(bloque) {
   const div = document.createElement('div');
   div.className = 'quiz-block';
-
-  const tiempoTotal = bloque.tiempoSegundos || 0;
-  const conTiempo = tiempoTotal > 0;
-  let tiempoRestante = tiempoTotal;
-  let respondido = false;
 
   let mediaHtml = '';
   if (bloque.video) {
@@ -362,104 +361,64 @@ function crearQuiz(bloque, numero, onCompletado) {
     mediaHtml = `<img class="quiz-photo" src="${bloque.foto}" alt="Quiz" onerror="this.style.display='none'" />`;
   }
 
+  const quizId = 'quiz-' + Math.random().toString(36).substr(2, 9);
+
   div.innerHTML = `
     ${mediaHtml}
-    ${conTiempo ? `<div class="quiz-timer">
-      <div class="timer-bar-bg"><div class="timer-bar" id="timer-bar-${numero}" style="width:100%"></div></div>
-      <div class="timer-count" id="timer-count-${numero}">${tiempoTotal}</div>
-    </div>` : ''}
     <div class="quiz-question">${bloque.pregunta}</div>
-    <div class="quiz-options" id="quiz-options-${numero}">
+    <div class="quiz-options" id="opts-${quizId}">
       ${bloque.opciones.map((op, i) => `
-        <button class="quiz-option" id="option-${numero}-${i}"
-          onclick="responderQuiz(${numero}, ${i}, ${bloque.correcta}, this, ${conTiempo})">
-          ${op}
-        </button>`).join('')}
+        <button class="quiz-option" data-idx="${i}">${op}</button>
+      `).join('')}
     </div>
-    <div class="quiz-result" id="quiz-result-${numero}"></div>
+    <div class="quiz-result" id="res-${quizId}"></div>
   `;
 
-  // Guardamos callback directamente en el div
-  div._cb = onCompletado;
+  const optsEl = div.querySelector(`#opts-${quizId}`);
+  const resEl  = div.querySelector(`#res-${quizId}`);
 
-  if (conTiempo) {
-    quizTimerInterval = setInterval(() => {
-      if (respondido) { clearInterval(quizTimerInterval); quizTimerInterval = null; return; }
-      tiempoRestante--;
-      const bar   = document.getElementById(`timer-bar-${numero}`);
-      const count = document.getElementById(`timer-count-${numero}`);
-      if (bar) bar.style.width = `${(tiempoRestante / tiempoTotal) * 100}%`;
-      if (count) {
-        count.textContent = tiempoRestante;
-        if (tiempoRestante <= 5) count.classList.add('urgent');
+  optsEl.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sel = parseInt(btn.dataset.idx);
+      optsEl.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+      optsEl.querySelectorAll('.quiz-option')[bloque.correcta].classList.add('correct');
+      if (sel !== bloque.correcta) btn.classList.add('wrong');
+
+      if (sel === bloque.correcta) {
+        resEl.className = 'quiz-result correct-result';
+        resEl.textContent = '¡Correcto! 🎉 Lo sabía que te acordabas 💛';
+      } else {
+        resEl.className = 'quiz-result wrong-result';
+        resEl.textContent = `❌ ¡Casi! La respuesta era: "${bloque.opciones[bloque.correcta]}"`;
       }
-      if (tiempoRestante <= 0) {
-        clearInterval(quizTimerInterval); quizTimerInterval = null;
-        respondido = true;
-        // Marcar correcta y mostrar resultado
-        const opts = document.querySelectorAll(`#quiz-options-${numero} .quiz-option`);
-        opts.forEach(b => b.disabled = true);
-        opts[bloque.correcta].classList.add('correct');
-        const res = document.getElementById(`quiz-result-${numero}`);
-        res.className = 'quiz-result wrong-result';
-        res.textContent = `⏰ ¡Se acabó el tiempo! La respuesta era: "${bloque.opciones[bloque.correcta]}"`;
-        setTimeout(() => { if (div._cb) { div._cb(); div._cb = null; } }, 1500);
-      }
-    }, 1000);
-  }
+    });
+  });
 
   return div;
 }
 
-function responderQuiz(numero, seleccion, correcta, btnEl, conTiempo) {
-  // Parar timer si lo hay
-  if (conTiempo && quizTimerInterval) { clearInterval(quizTimerInterval); quizTimerInterval = null; }
-
-  const options = document.querySelectorAll(`#quiz-options-${numero} .quiz-option`);
-  const result  = document.getElementById(`quiz-result-${numero}`);
-  options.forEach(b => b.disabled = true);
-  options[correcta].classList.add('correct');
-  if (seleccion !== correcta) btnEl.classList.add('wrong');
-
-  if (seleccion === correcta) {
-    result.className = 'quiz-result correct-result';
-    result.textContent = '¡Correcto! 🎉 Lo sabía que te acordabas 💛';
-  } else {
-    result.className = 'quiz-result wrong-result';
-    result.textContent = `❌ ¡Casi! La respuesta era: "${document.getElementById(`option-${numero}-${correcta}`).textContent.trim()}"`;
-  }
-
-  // Llamar callback: subir por el DOM hasta encontrar el quiz-block
-  setTimeout(() => {
-    const quizBlock = btnEl.closest('.quiz-block');
-    if (quizBlock && quizBlock._cb) {
-      quizBlock._cb();
-      quizBlock._cb = null;
-    }
-  }, 1500);
-}
-
-// ---- BOTÓN SIGUIENTE MES ----
+// ---- BOTÓN SIGUIENTE MES ---- (siempre al final)
 function mostrarBotonSiguienteMes(mes, content) {
-  mes.completado = true;
   const idx = MESES.findIndex(m => m.id === mes.id);
+  mes.completado = true;
   if (idx !== -1 && idx < MESES.length - 1) MESES[idx + 1].desbloqueado = true;
   guardarEstado();
 
   const btn = document.createElement('div');
+  btn.style.textAlign = 'center';
+  btn.style.padding = '2rem 1rem';
+
   if (idx === MESES.length - 1) {
     btn.innerHTML = `
-      <div style="text-align:center;padding:2rem 1rem;">
-        <div style="font-size:3rem;margin-bottom:1rem;">🎈❤️🎈</div>
-        <h2 style="font-family:'Pacifico',cursive;font-size:1.8rem;color:#3D2B1F;margin-bottom:1rem;">
-          ¡Feliz aniversario, mi amor!
-        </h2>
-        <p style="color:#7A4F2E;font-size:1.1rem;line-height:1.7;font-weight:500;">
-          Un año increíble a tu lado. Gracias por cada momento, cada risa y cada abrazo.
-          Eres lo mejor que me ha pasado. Te quiero muchísimo. 💛
-        </p>
-        <div style="font-size:2rem;margin-top:1.5rem;">🌹🏠🎈</div>
-      </div>`;
+      <div style="font-size:3rem;margin-bottom:1rem;">🎈❤️🎈</div>
+      <h2 style="font-family:'Pacifico',cursive;font-size:1.8rem;color:#3D2B1F;margin-bottom:1rem;">
+        ¡Feliz aniversario, mi amor!
+      </h2>
+      <p style="color:#7A4F2E;font-size:1.1rem;line-height:1.7;font-weight:500;">
+        Un año increíble a tu lado. Gracias por cada momento, cada risa y cada abrazo.
+        Eres lo mejor que me ha pasado. Te quiero muchísimo. 💛
+      </p>
+      <div style="font-size:2rem;margin-top:1.5rem;">🌹🏠🎈</div>`;
   } else {
     const sig = MESES[idx + 1];
     btn.innerHTML = `
@@ -469,7 +428,7 @@ function mostrarBotonSiguienteMes(mes, content) {
   }
 
   content.appendChild(btn);
-  setTimeout(() => btn.scrollIntoView({ behavior: 'smooth', block: 'end' }), 200);
+  setTimeout(() => btn.scrollIntoView({ behavior: 'smooth', block: 'end' }), 300);
 }
 
 // ---- SPOTIFY ----
