@@ -3,11 +3,7 @@
 //  Carla & Josep - Mayo 2025 → Mayo 2026
 // ============================================
 
-<<<<<<< HEAD
-const SPOTIFY_URL = "https://open.spotify.com/embed/playlist/2zeEFP1kLJVrFcHdrEbME7?utm_source=generator";
-=======
 const SPOTIFY_URL = "https://open.spotify.com/playlist/2zeEFP1kLJVrFcHdrEbME7";
->>>>>>> 6ee88375a16a3b9ef20a64a51c89610fb057edc7
 
 // URL base de las fotos en GitHub
 const BASE_URL = "https://raw.githubusercontent.com/Josep-Artis/aniversario/main/carla/";
