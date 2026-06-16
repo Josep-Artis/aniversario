@@ -133,10 +133,9 @@ const MESES = [
         tipo: "texto",
         texto: "Julio fue de esos meses que te dejan con una sonrisa permanente. Cine en Sant Cugat para ver Cómo Entrenar a Tu Dragón — con pizza incluida y una crepe de Nutella con helado que todavía me debes, por cierto. 👀 Tomando algo tranquilos en la plaza de casa. Y el broche de oro: nuestras primeras vacaciones juntos en Mallorca, en el Sun Club El Dorado. Todo incluido, el sol, el mar, y tú. No se puede pedir más. 🌴"
       },
-      { tipo: "foto", src: BASE_URL + "46.jpg", caption: "🐉 Cine en Sant Cugat — Cómo Entrenar a Tu Dragón" },
+      { tipo: "foto", src: BASE_URL + "46.jpg", caption: "🐉 Cine en Sant Cugat — Cómo Entrenar a Tu Dragón", noZoom: true },
       {
         tipo: "quiz",
-        foto: BASE_URL + "46.jpg",
         pregunta: "¿Qué comimos el día que fuimos al cine a ver Cómo Entrenar a Tu Dragón?",
         opciones: ["Pizza 🍕", "Hamburguesa 🍔", "Sushi 🍣", "Bocadillo 🥖"],
         correcta: 0,
