@@ -440,6 +440,11 @@ function iniciarSpotify() {
   }
   const iframe = document.getElementById('spotify-iframe');
   if (iframe) iframe.src = embedUrl + '?utm_source=generator&theme=0';
+
+  // Abrir el panel por defecto
+  const panel = document.getElementById('spotify-panel');
+  panel.classList.add('open');
+  document.getElementById('spotify-icon').textContent = '✕';
 }
 
 function toggleSpotify() {
