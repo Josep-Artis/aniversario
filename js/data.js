@@ -23,7 +23,7 @@ const MESES = [
     contenido: [
       {
         tipo: "texto",
-        texto: "Desde el primer mensaje ya había algo especial. Las conversaciones fluían solas, las horas pasaban sin darnos cuenta y teníamos tantas cosas en común que parecía que nos conociéramos de toda la vida. La primera vez que quedamos fue Sant Jordi — sin fotos, pero con una de esas tardes que no se olvidan. Y cuando por fin llegó el día de ir a Sant Cugat... el perro de mi madre tuvo otros planes. Pero ni eso pudo estropearlo. Ese mes fuimos al Turó de Can Mates, al Pi del Xandri, conocí a Marc y Anna, te pedí salir en Sitges, te regalé tu primer ramo, y conociste a Candela. Mayo fue el principio de todo. 🌹"
+        texto: "Desde el primer mensaje ya había algo especial. Las conversaciones fluían solas, las horas pasaban sin darnos cuenta y teníamos tantas cosas en común que parecía que nos conociéramos de toda la vida. La primera vez que quedamos fue Sant Jordi — sin fotos, pero con una de esas tardes que no se olvidan. Y cuando por fin llegó el día de ir a Sant Cugat... el perro de mi madre tuvo otros planes. Pero ni eso pudo estropearlo. Ese mes fuimos al Turó de Can Mates, al Pi del Xandri, conocí a Marc y Anna, te pedí salir en Sitges, te regalé tu primer ramo, y conociste a mi hermana y a Candela. Mayo fue el principio de todo. 🌹"
       },
       { tipo: "foto", src: BASE_URL + "1.jpg", caption: "📍 Primer día en Sant Cugat, Turó de Can Mates 🌳" },
       { tipo: "foto", src: BASE_URL + "3.PNG", caption: "✨ Versión anime del primer día" },
@@ -41,9 +41,9 @@ const MESES = [
       {
         tipo: "quiz",
         pregunta: "¿Qué pasó la mañana que íbamos a quedar por primera vez en Sant Cugat para desayunar?",
-        opciones: ["Te mordió el perro de mi madre 🐶", "Perdí el tren", "Me quedé dormido", "Se me olvidó avisarte"],
+        opciones: ["Te mordió el perro de tu madre 🐶", "Perdí el tren", "Me quedé dormido", "Se me olvidó avisarte"],
         correcta: 0,
-        tiempoSegundos: 60
+        tiempoSegundos: 0
       },
       { tipo: "foto", src: BASE_URL + "15.jpg", caption: "😬 Qué nervios... después de lo de tus padres" },
       { tipo: "foto", src: BASE_URL + "18.jpg", caption: "🍹 Tomando algo en el Botanic GastroLounge de Tossa" },
@@ -99,18 +99,18 @@ const MESES = [
         tipo: "texto",
         texto: "Junio llegó con calor y con ganas de aventura. Nos metimos de lleno en el Museo Ikono, donde descubrimos que los dos guardamos un niño interior que no tiene ninguna intención de crecer — especialmente tú en la piscina de bolas, que con 1,58 casi desapareces entera. 😄 Tomando algo en la plaza de casa cuando venías a verme, tardeos en Sitges, días en Tossa... y la noche de San Juan, donde lo que empezó como una bengala acabó en un duelo de varitas digno de Hogwarts. Avada Kedavra. 🪄⚡"
       },
-      { tipo: "foto", src: BASE_URL + "37.jpg", caption: "🎨 Museo Ikono, Barcelona" },
-      { tipo: "foto", src: BASE_URL + "38.jpg", caption: "🎨 Museo Ikono" },
-      { tipo: "foto", src: BASE_URL + "40.jpg", caption: "🎱 La piscina de bolas... con 1,58 😄" },
-      { tipo: "foto", src: BASE_URL + "39.jpg", caption: "🎨 Museo Ikono" },
-      { tipo: "foto", src: BASE_URL + "41.jpg", caption: "🎨 Museo Ikono" },
-      { tipo: "foto", src: BASE_URL + "42.jpg", caption: "🎨 Museo Ikono 💛" },
+      { tipo: "foto", src: BASE_URL + "37.jpg", caption: "🎱 Tú y yo en la piscina de bolas" },
+      { tipo: "foto", src: BASE_URL + "38.jpg", caption: "🦎 Técnica del Camaleón Mimético" },
+      { tipo: "foto", src: BASE_URL + "40.jpg", caption: "🎨 Perdidos en el museo IKONO" },
+      { tipo: "foto", src: BASE_URL + "39.jpg", caption: "📸 Me encantan estas fotos" },
+      { tipo: "foto", src: BASE_URL + "41.jpg", caption: "😊 Tengo esa sonrisa grabada" },
+      { tipo: "foto", src: BASE_URL + "42.jpg", caption: "💛 Solos tú y yo" },
       { tipo: "foto", src: BASE_URL + "43.jpg", caption: "🌊 Tardeo en Sitges" },
       { tipo: "foto", src: BASE_URL + "44.jpg", caption: "🌊 Tardeo en Sitges" },
       { tipo: "foto", src: BASE_URL + "45.jpg", caption: "🌊 Tossa de Mar, antes de cenar" },
       {
         tipo: "video",
-        src: BASE_URL + "45.5",
+        src: BASE_URL + "45.5.mp4",
         caption: "🪄 Noche de San Juan — duelo de varitas nivel Hogwarts ⚡",
         formato: "video/mp4"
       }
