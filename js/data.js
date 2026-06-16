@@ -393,18 +393,18 @@ const MESES = [
         tipo: "texto",
         texto: "Semana Santa y por fin tiempo para respirar juntos. Un picnic en Montjuïc escuchando música con Barcelona a los pies, el jardín botánico, el sol dando en la cara... y al día siguiente, un salto al pasado en la exposición de Pompeya en realidad virtual. De la calma absoluta al Vesubio en erupción. Así somos nosotros. 🌋"
       },
-      { tipo: "foto", src: BASE_URL + "carla2.jpg", caption: "😂 Tú tan bella y yo.. pues yo jajaja" },
-      { tipo: "foto", src: BASE_URL + "carla1.jpg", caption: "🍣 Sushiii del bueno" },
-      { tipo: "foto", src: BASE_URL + "carla3.jpg", caption: "😍 Tú siempre tan guapa amor 🥹" },
+      { tipo: "foto", src: BASE_URL + "carla6.jpg", caption: "😂 Tú tan bella y yo.. pues yo jajaja" },
+      { tipo: "foto", src: BASE_URL + "carla7.jpg", caption: "🍣 Sushiii del bueno" },
+      { tipo: "foto", src: BASE_URL + "carla8.jpg", caption: "😍 Tú siempre tan guapa amor 🥹" },
       { tipo: "foto", src: BASE_URL + "carla4.jpg", caption: "🌸 Juntitos después del picnic en Montjuïc" },
       { tipo: "foto", src: BASE_URL + "carla5.jpg", caption: "🥽 ¿Preparada para el VR?" },
       { tipo: "foto", src: BASE_URL + "129.jpg", caption: "🌿 Picnic en Montjuïc, Barcelona al sol ☀️" },
       { tipo: "foto", src: BASE_URL + "130.jpg", caption: "🌿 Montjuïc — música y Barcelona a los pies" },
       { tipo: "foto", src: BASE_URL + "131.jpg", caption: "🏛️ Exposición de Pompeya — Realidad Virtual", noZoom: true },
       { tipo: "foto", src: BASE_URL + "132.jpg", caption: "🏛️ Pompeya VR 💛" },
-      { tipo: "foto", src: BASE_URL + "carla6.jpg", caption: "🌷 Subimoooos a ver las flores" },
-      { tipo: "foto", src: BASE_URL + "carla7.jpg", caption: "💛 Tú & Yo" },
-      { tipo: "foto", src: BASE_URL + "carla8.jpg", caption: "😄 Feliz con su pad thai" }
+      { tipo: "foto", src: BASE_URL + "carla1.jpg", caption: "🌷 Subimoooos a ver las flores" },
+      { tipo: "foto", src: BASE_URL + "carla2.jpg", caption: "💛 Tú & Yo" },
+      { tipo: "foto", src: BASE_URL + "carla3.jpg", caption: "😄 Feliz con su pad thai" }
     ]
   },
 
