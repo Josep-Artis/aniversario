@@ -3,7 +3,7 @@
 //  Carla & Josep - Mayo 2025 → Mayo 2026
 // ============================================
 
-const SPOTIFY_URL = "https://open.spotify.com/playlist/PON_AQUI_TU_PLAYLIST";
+const SPOTIFY_URL = "https://open.spotify.com/embed/playlist/2zeEFP1kLJVrFcHdrEbME7?utm_source=generator";
 
 // URL base de las fotos en GitHub
 const BASE_URL = "https://raw.githubusercontent.com/Josep-Artis/aniversario/main/carla/";
@@ -45,18 +45,18 @@ const MESES = [
         correcta: 0,
         tiempoSegundos: 0
       },
-      { tipo: "foto", src: BASE_URL + "15.jpg", caption: "😬 Qué nervios... después de lo de tus padres" },
-      { tipo: "foto", src: BASE_URL + "18.jpg", caption: "🍹 Tomando algo en el Botanic GastroLounge de Tossa" },
-      { tipo: "foto", src: BASE_URL + "19.jpg", caption: "🍹 Botanic GastroLounge, Tossa de Mar" },
-      { tipo: "foto", src: BASE_URL + "20.jpg", caption: "🌊 Tossa de Mar", noZoom: true },
-      { tipo: "foto", src: BASE_URL + "21.jpg", caption: "🌊 Tossa de Mar" },
+      { tipo: "foto", src: BASE_URL + "15.jpg", caption: "😬 Qué nervios... después de conocer a tus padres" },
+      { tipo: "foto", src: BASE_URL + "18.jpg", caption: "🍹 Tomando algo en el Botanic de Tossa" },
+      { tipo: "foto", src: BASE_URL + "19.jpg", caption: "🍹 Besitos en el Botanic" },
+      { tipo: "foto", src: BASE_URL + "20.jpg", caption: "🌊 Paseito a ver tortugas", noZoom: true },
+      { tipo: "foto", src: BASE_URL + "21.jpg", caption: "🌊 Castillo Tossa" },
       { tipo: "foto", src: BASE_URL + "22.jpg", caption: "😴 Sobada histórica — primer sticker de Carla 😂" },
-      { tipo: "foto", src: BASE_URL + "23.jpg", caption: "🪞 En mi habitación" },
+      { tipo: "foto", src: BASE_URL + "23.jpg", caption: " 🕒 En mi habitación" },
       { tipo: "foto", src: BASE_URL + "24.jpg", caption: "🏰 Castell de Sant Pere de Ribes" },
-      { tipo: "foto", src: BASE_URL + "25.jpg", caption: "🏰 Castillo de Sant Pere de Ribes" },
-      { tipo: "foto", src: BASE_URL + "26.jpg", caption: "🏰 Castillo de Sant Pere de Ribes" },
-      { tipo: "foto", src: BASE_URL + "27.jpg", caption: "🌊 Tarde en Sitges", noZoom: true },
-      { tipo: "foto", src: BASE_URL + "28.jpg", caption: "🌊 Tarde en Sitges" },
+      { tipo: "foto", src: BASE_URL + "25.jpg", caption: "🏰 Paseito con Candelita" },
+      { tipo: "foto", src: BASE_URL + "26.jpg", caption: "🏰 Me encanta esta foto amor" },
+      { tipo: "foto", src: BASE_URL + "27.jpg", caption: "🌊 En el espigon", noZoom: true },
+      { tipo: "foto", src: BASE_URL + "28.jpg", caption: "🌊 ¿Como no ponen una valla aqui?" },
       { tipo: "foto", src: BASE_URL + "29.jpg", caption: "🎨 Cau Ferrat, Sitges" },
       { tipo: "foto", src: BASE_URL + "30.jpg", caption: "🌊 La Punta de Sitges" },
       {
@@ -66,11 +66,11 @@ const MESES = [
         correcta: 0,
         tiempoSegundos: 0
       },
-      { tipo: "foto", src: BASE_URL + "31.jpg", caption: "🌅 Atardecer en el Turó de Can Mates" },
-      { tipo: "foto", src: BASE_URL + "32.jpg", caption: "🌅 Turó de Can Mates, un sitio muy nuestro" },
-      { tipo: "foto", src: BASE_URL + "33.jpg", caption: "🌅 Turó de Can Mates" },
-      { tipo: "foto", src: BASE_URL + "34.jpg", caption: "🌅 Turó de Can Mates" },
-      { tipo: "foto", src: BASE_URL + "35.jpg", caption: "🌅 Turó de Can Mates", noZoom: true },
+      { tipo: "foto", src: BASE_URL + "31.jpg", caption: "🌅 Tomandonos unos smoothies con unos nachos" },
+      { tipo: "foto", src: BASE_URL + "32.jpg", caption: "🌅 En el Somewhere" },
+      { tipo: "foto", src: BASE_URL + "33.jpg", caption: "🌅 Atardecer en el Turó de Can Mates" },
+      { tipo: "foto", src: BASE_URL + "34.jpg", caption: "🌅 Estiraditos disfrutando del momento" },
+      { tipo: "foto", src: BASE_URL + "35.jpg", caption: "🌅 No podia faltar la cenita", noZoom: true },
       {
         tipo: "mapa",
         titulo: "Nuestros sitios de mayo 📍",
