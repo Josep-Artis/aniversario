@@ -923,3 +923,22 @@ body {
 }
 .lightbox-close:hover { background: rgba(255,255,255,0.3); }
 .photo-block img { cursor: zoom-in; }
+
+/* ---- QUIZ AUDIO ---- */
+.quiz-audio-block {
+  text-align: center;
+  padding: 1.5rem 1rem;
+}
+.quiz-audio-btn {
+  background: var(--primary, #E8A838);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 0.8rem 2rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  transition: transform 0.1s;
+}
+.quiz-audio-btn:active { transform: scale(0.97); }
