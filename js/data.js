@@ -45,7 +45,7 @@ const MESES = [
         correcta: 0,
         tiempoSegundos: 0
       },
-      { tipo: "foto", src: BASE_URL + "15.jpg", caption: "😬 Qué nervios... después de conocer a tus padres" },
+      { tipo: "foto", src: BASE_URL + "15.jpg", caption: "😬 Qué nervios... después a conocer a tus padres" },
       { tipo: "foto", src: BASE_URL + "18.jpg", caption: "🍹 Tomando algo en el Botanic de Tossa" },
       { tipo: "foto", src: BASE_URL + "19.jpg", caption: "🍹 Besitos en el Botanic" },
       { tipo: "foto", src: BASE_URL + "20.jpg", caption: "🌊 Paseito a ver tortugas", noZoom: true },
@@ -97,7 +97,7 @@ const MESES = [
     contenido: [
       {
         tipo: "texto",
-        texto: "Junio llegó con calor y con ganas de aventura. Nos metimos de lleno en el Museo Ikono, donde descubrimos que los dos guardamos un niño interior que no tiene ninguna intención de crecer — especialmente tú en la piscina de bolas, que con 1,58 casi desapareces entera. 😄 Tomando algo en la plaza de casa cuando venías a verme, tardeos en Sitges, días en Tossa... y la noche de San Juan, donde lo que empezó como una bengala acabó en un duelo de varitas digno de Hogwarts. Avada Kedavra. 🪄⚡"
+        texto: "Junio llegó con calor y con ganas de aventura. Nos metimos de lleno en el Museo Ikono, donde descubrimos que los dos guardamos un niño interior que no tiene ninguna intención de crecer — especialmente tú en la piscina de bolas, que con 1,58 casi desapareces entera. 😄 Tomando algo en la plaza de casa cuando venías a verme, tardeos en Sitges, días en Tossa... y la noche de San Juan, donde lo que empezó como una bengala acabó en un duelo de varitas digno de Hogwarts. Avada Kedavra."
       },
       { tipo: "foto", src: BASE_URL + "37.jpg", caption: "🎱 Tú y yo en la piscina de bolas" },
       { tipo: "foto", src: BASE_URL + "38.jpg", caption: "🦎 Técnica del Camaleón Mimético" },
@@ -106,12 +106,12 @@ const MESES = [
       { tipo: "foto", src: BASE_URL + "41.jpg", caption: "😊 Tengo esa sonrisa grabada" },
       { tipo: "foto", src: BASE_URL + "42.jpg", caption: "💛 Solos tú y yo" },
       { tipo: "foto", src: BASE_URL + "43.jpg", caption: "🌊 Tardeo en Sitges" },
-      { tipo: "foto", src: BASE_URL + "44.jpg", caption: "🌊 Tardeo en Sitges" },
-      { tipo: "foto", src: BASE_URL + "45.jpg", caption: "🌊 Tossa de Mar, antes de cenar" },
+      { tipo: "foto", src: BASE_URL + "44.jpg", caption: "🌊 Lo bien que lo estabamos pasando y lo mala que te pusiste..." },
+      { tipo: "foto", src: BASE_URL + "45.jpg", caption: "🌊 Tossa antes de cenar" },
       {
         tipo: "video",
         src: BASE_URL + "45.5.mp4",
-        caption: "🪄 Noche de San Juan — duelo de varitas nivel Hogwarts ⚡",
+        caption: "Noche de San Juan — duelo de varitas nivel Hogwarts ⚡",
         formato: "video/mp4"
       }
     ]
@@ -149,12 +149,12 @@ const MESES = [
         correcta: 0,
         tiempoSegundos: 0
       },
-      { tipo: "foto", src: BASE_URL + "47.jpg", caption: "☕ Tomando algo en la plaza de la Mercè, Sant Pere de Ribes" },
-      { tipo: "foto", src: BASE_URL + "48.jpg", caption: "🌴 Primeras vacaciones juntos — Mallorca" },
-      { tipo: "foto", src: BASE_URL + "49.jpg", caption: "🌴 Sun Club El Dorado, Mallorca" },
-      { tipo: "foto", src: BASE_URL + "50.jpg", caption: "🌴 Mallorca 💛" },
-      { tipo: "foto", src: BASE_URL + "51.jpg", caption: "🌴 Mallorca" },
-      { tipo: "foto", src: BASE_URL + "52.jpg", caption: "🌴 Mallorca, todo incluido y tú 🌊" }
+      { tipo: "foto", src: BASE_URL + "47.jpg", caption: "☕ Tomando algo en la plaza de la Mercè" },
+      { tipo: "foto", src: BASE_URL + "48.jpg", caption: "🌴 Primeras vacaciones juntos" },
+      { tipo: "foto", src: BASE_URL + "49.jpg", caption: "🌴 Sun Club El Dorado" },
+      { tipo: "foto", src: BASE_URL + "50.jpg", caption: "🌴 Lo facil que fue bajar 💛" },
+      { tipo: "foto", src: BASE_URL + "51.jpg", caption: "🌴 Y lo que costo subir DIOSSS" },
+      { tipo: "foto", src: BASE_URL + "52.jpg", caption: "🌴 Mallorca, todo incluido, tu y tú 🌊" }
     ]
   },
 
