@@ -355,8 +355,18 @@ function crearQuiz(bloque) {
 
   let mediaHtml = '';
   if (bloque.video) {
-    mediaHtml = `<video class="quiz-photo" controls playsinline preload="metadata" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=">
-      <source src="${bloque.video}" type="video/mp4" /></video>`;
+    const audioId = 'audio-' + Math.random().toString(36).substr(2, 9);
+    mediaHtml = `
+      <div class="quiz-audio-block">
+        <audio id="${audioId}" preload="metadata">
+          <source src="${bloque.video}" type="video/mp4" />
+        </audio>
+        <button class="quiz-audio-btn" onclick="
+          var a = document.getElementById('${audioId}');
+          if (a.paused) { a.play(); this.textContent = '⏸ Pausar audio'; }
+          else { a.pause(); this.textContent = '🎧 Reproducir audio'; }
+        ">🎧 Reproducir audio</button>
+      </div>`;
   } else if (bloque.foto) {
     mediaHtml = `<img class="quiz-photo" src="${bloque.foto}" alt="Quiz" onerror="this.style.display='none'" />`;
   }
